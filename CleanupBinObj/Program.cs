@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using CleanupBinObj.Commands;
+using CleanupBinObj.Rules.Exclude;
 using Spectre.Console.Cli;
 using Spectre.Cli.Extensions.DependencyInjection;
 
@@ -12,6 +13,8 @@ var serviceCollection = new ServiceCollection()
                 })
     );
 
+serviceCollection.AddTransient<ExclusionRules>();
+
 using var registrar = new DependencyInjectionRegistrar(serviceCollection);
 var app = new CommandApp(registrar);
 
@@ -21,8 +24,19 @@ app.Configure(
         config.ValidateExamples();
 
         config.AddCommand<ConsoleCommand>("console")
-                .WithDescription("Example console command.")
-                .WithExample(new[] { "console" });
+            .WithDescription("Example console command.")
+            .WithExample(new[]
+            {
+                "console"
+            });
+
+        config.AddCommand<WhatIfCommand>("whatif")
+            .WithDescription("Show the folders to be deleted")
+            .WithExample(new[]
+            {
+                "whatif",
+                "."
+            });
     });
 
 return await app.RunAsync(args);
