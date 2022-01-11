@@ -7,11 +7,13 @@ using Spectre.Cli.Extensions.DependencyInjection;
 
 var serviceCollection = new ServiceCollection()
     .AddLogging(configure =>
-            configure
-                .AddSimpleConsole(opts => {
-                    opts.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
-                })
-    );
+    {
+        configure.AddSimpleConsole(opts =>
+        {
+            opts.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
+        });
+        configure.SetMinimumLevel(LogLevel.Error);
+    });
 
 serviceCollection.AddTransient<ExclusionRules>();
 
