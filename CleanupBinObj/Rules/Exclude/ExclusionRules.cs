@@ -7,11 +7,9 @@ public class ExclusionRules
 {
     private List<IExclusionRule> Rules = new();
 
-    public ExclusionRules()
+    public ExclusionRules(IExclusionRule[] rules)
     {
-        Rules.Add(new ExcludeAncestorPathRule());
-        Rules.Add(new ExcludeSubtreeRule(".git"));
-        Rules.Add(new ExcludeSubtreeRule("node_modules"));
+        Rules.AddRange(rules);
     }
 
     public Exclusion Enforce(string folder)

@@ -1,5 +1,6 @@
 ﻿namespace CleanupBinObj.Commands.Settings;
 
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Reflection;
@@ -18,17 +19,22 @@ public class WhatIfSettings : CommandSettings
         return (root: RootLocation, entryAssembly) switch
         {
             { root: ".", entryAssembly: not null } => ValidateEntryPath(entryAssembly),
-            { root.Length: > 0 } when Directory.Exists(RootLocation) => EnsurePathIsAbsolute(),
-            { root.Length: > 0 } =>
-                ValidationResult.Error($"Unable to find directory '{RootLocation}'"),
+            { root.Length: > 0 } => EnsurePathExists(),
             _ => ValidationResult.Error("Unspecified issue with root folder supplied"),
         };
     }
 
-    private ValidationResult EnsurePathIsAbsolute()
+    private ValidationResult EnsurePathExists()
     {
-        RootLocation = Path.GetFullPath(RootLocation);
-        return ValidationResult.Success();
+        var root = RootLocation.StartsWith('~')
+            ? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + RootLocation[1..]
+            : RootLocation;
+
+        RootLocation = Path.GetFullPath(root);
+
+        return Directory.Exists(RootLocation)
+            ? ValidationResult.Success()
+            : ValidationResult.Error($"Unable to find directory '{RootLocation}'");
     }
 
     private ValidationResult ValidateEntryPath(Assembly entryAssembly)

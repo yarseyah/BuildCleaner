@@ -15,6 +15,16 @@ var serviceCollection = new ServiceCollection()
         configure.SetMinimumLevel(LogLevel.Error);
     });
 
+// TODO: need to construct this in a more DI way
+serviceCollection.AddTransient(
+    _ => new IExclusionRule[]
+        {
+            new ExcludeAncestorPathRule(),
+            new ExcludeSubtreeRule(".git"),
+            new ExcludeSubtreeRule("node_modules"),
+            new ExcludeSymbolicLinks(),
+            new ExcludeDotFolders(),
+        });
 serviceCollection.AddTransient<ExclusionRules>();
 
 using var registrar = new DependencyInjectionRegistrar(serviceCollection);

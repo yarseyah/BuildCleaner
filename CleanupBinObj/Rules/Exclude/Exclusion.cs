@@ -10,4 +10,6 @@ public enum Exclusion
     ExcludeSelf = 1,
 
     ExcludeChildren = 2,
+
+    ExcludeSelfAndChildren = 3,
 }

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using CleanupBinObj.Commands.Settings;
 using CleanupBinObj.Rules.Exclude;
@@ -43,7 +42,7 @@ public class WhatIfCommand : AsyncCommand<WhatIfSettings>
 
     public override Task<int> ExecuteAsync(CommandContext context, WhatIfSettings settings)
     {
-        var root = EnsureAbsolutePath(settings.RootLocation);
+        var root = settings.RootLocation;
 
         AnsiConsole.WriteLine("WhatIf shows the folders the would be deleted when using the 'delete' command");
         AnsiConsole.WriteLine();
@@ -103,21 +102,5 @@ public class WhatIfCommand : AsyncCommand<WhatIfSettings>
             AccessErrors.Add(parent);
             return Array.Empty<string>();
         }
-    }
-
-    // TODO: this can be done in the validation of settings
-    private string EnsureAbsolutePath(string root)
-    {
-        var entryAssembly = Assembly.GetEntryAssembly();
-        return (root, entryAssembly) switch
-        {
-            { root: ".", entryAssembly: not null } => (!string.IsNullOrWhiteSpace(entryAssembly.Location)
-                        ? Path.GetDirectoryName(entryAssembly.Location)
-                        : null) ??
-                    throw new NotSupportedException("Seem to be missing entry assembly"),
-            { root.Length: > 0 } when Directory.Exists(root) => Path.GetFullPath(root),
-            { root.Length: > 0 } => throw new DirectoryNotFoundException($"Unable to find directory '{root}'"),
-            _ => throw new ArgumentException("Unspecified issue with root folder supplied", nameof(root))
-        };
     }
 }

@@ -3,6 +3,8 @@ using Spectre.Console.Cli;
 
 namespace CleanupBinObj.Commands.Validation;
 
+using System;
+
 public class ValidateStringAttribute : ParameterValidationAttribute
 {
     private const int MinimumLength = 3;
