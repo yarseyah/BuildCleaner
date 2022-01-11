@@ -16,6 +16,8 @@ public class WhatIfCommand : AsyncCommand<WhatIfSettings>
 {
     private HashSet<string> TargetFolders { get; } = new(StringComparer.CurrentCultureIgnoreCase);
 
+    private List<string> AccessErrors { get; } = new();
+
     public WhatIfCommand(
         ILogger<WhatIfCommand> logger,
         ExclusionRules exclusionRules)
@@ -52,13 +54,21 @@ public class WhatIfCommand : AsyncCommand<WhatIfSettings>
             AnsiConsole.WriteLine(folder);
         }
 
+        if (true && AccessErrors.Any())
+        {
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[aqua]The following locations reported an access problem[/]");
+            AccessErrors.ForEach(e => AnsiConsole.MarkupLine($" * [red]{e}[/]"));
+        }
+
         return Task.FromResult(0);
     }
 
     private IEnumerable<string> GetFoldersRecursively(string root)
     {
-        IEnumerable<(string Folder, bool IsTarget)> folders = Directory.GetDirectories(root)
-            .Select(f => (Folders: f, IsTarget: TargetFolders.Contains(Path.GetFileName(f))));
+        IEnumerable<(string Folder, bool IsTarget)> folders =
+            SafelyGetSubDirectories(root)
+                .Select(f => (Folders: f, IsTarget: TargetFolders.Contains(Path.GetFileName(f))));
 
         foreach (var folder in folders)
         {
@@ -77,6 +87,21 @@ public class WhatIfCommand : AsyncCommand<WhatIfSettings>
                     yield return child;
                 }
             }
+        }
+    }
+
+    private string[] SafelyGetSubDirectories(string parent)
+    {
+        try
+        {
+            return Directory.GetDirectories(parent);
+        }
+        catch (Exception e)
+        {
+            var logging = e is UnauthorizedAccessException ? LogLevel.Warning : LogLevel.Error;
+            Logger.Log(logging, e, "Problem getting directories: {Root}", parent);
+            AccessErrors.Add(parent);
+            return Array.Empty<string>();
         }
     }
 
