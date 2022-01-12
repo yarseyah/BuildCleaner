@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using CleanupBinObj.Commands;
 using CleanupBinObj.Rules.Exclude;
+using CleanupBinObj.Support;
 using Spectre.Console.Cli;
 using Spectre.Cli.Extensions.DependencyInjection;
 
@@ -26,6 +27,7 @@ serviceCollection.AddTransient(
             new ExcludeDotFolders(),
         });
 serviceCollection.AddTransient<ExclusionRules>();
+serviceCollection.AddTransient<RecursiveFolderLocator>();
 
 using var registrar = new DependencyInjectionRegistrar(serviceCollection);
 var app = new CommandApp(registrar);
