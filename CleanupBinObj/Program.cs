@@ -34,14 +34,6 @@ app.Configure(
     config =>
     {
         config.ValidateExamples();
-
-        config.AddCommand<ConsoleCommand>("console")
-            .WithDescription("Example console command.")
-            .WithExample(new[]
-            {
-                "console"
-            });
-
         config.AddCommand<WhatIfCommand>("whatif")
             .WithDescription("Show the folders to be deleted")
             .WithExample(new[]
