@@ -39,18 +39,25 @@ public class RecursiveFolderLocator
 
     private List<string> AccessErrors { get; } = new();
 
-    public void Visit(string rootLocation, Action<string> callback)
+    public Options DefaultOptions => new Options();
+
+    public void Visit(string rootLocation, Action<string> callback, Options? options = null)
     {
         var root = EnsureAbsolutePath(rootLocation);
+        options ??= DefaultOptions;
 
-        AnsiConsole.MarkupLine($"Base folder : [yellow]{root}[/]");
+        if (options.DisplayBaseFolder)
+        {
+            AnsiConsole.MarkupLine($"Base folder : [yellow]{root}[/]");
+            AnsiConsole.WriteLine();
+        }
 
         foreach (var folder in GetFoldersRecursively(root))
         {
-            AnsiConsole.WriteLine(folder);
+            callback(folder);
         }
 
-        if (true && AccessErrors.Any())
+        if (options.DisplayAccessErrors && AccessErrors.Any())
         {
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[aqua]The following locations reported an access problem[/]");
@@ -114,5 +121,12 @@ public class RecursiveFolderLocator
             { root.Length: > 0 } => throw new DirectoryNotFoundException($"Unable to find directory '{root}'"),
             _ => throw new ArgumentException("Unspecified issue with root folder supplied", nameof(root))
         };
+    }
+
+    public class Options
+    {
+        public bool DisplayAccessErrors { get; set; }
+
+        public bool DisplayBaseFolder { get; set; } = true;
     }
 }
