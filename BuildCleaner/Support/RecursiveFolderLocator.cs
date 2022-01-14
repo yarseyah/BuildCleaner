@@ -1,11 +1,11 @@
-﻿namespace CleanupBinObj.Support;
+﻿namespace BuildCleaner.Support;
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using CleanupBinObj.Rules.Exclude;
+using BuildCleaner.Rules.Exclude;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 

@@ -1,4 +1,4 @@
-﻿namespace CleanupBinObj.Rules.Exclude;
+﻿namespace BuildCleaner.Rules.Exclude;
 
 using System;
 using System.IO;

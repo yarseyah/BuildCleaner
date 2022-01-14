@@ -1,4 +1,4 @@
-﻿namespace CleanupBinObj.Commands.Settings;
+﻿namespace BuildCleaner.Commands.Settings;
 
 using System;
 using System.ComponentModel;

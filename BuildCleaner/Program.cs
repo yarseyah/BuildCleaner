@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using CleanupBinObj.Commands;
-using CleanupBinObj.Rules.Exclude;
-using CleanupBinObj.Support;
+using BuildCleaner.Commands;
+using BuildCleaner.Rules.Exclude;
+using BuildCleaner.Support;
 using Spectre.Console.Cli;
 using Spectre.Cli.Extensions.DependencyInjection;
 

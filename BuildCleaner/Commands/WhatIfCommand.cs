@@ -1,8 +1,8 @@
-﻿namespace CleanupBinObj.Commands;
+﻿namespace BuildCleaner.Commands;
 
 using System.Threading.Tasks;
-using CleanupBinObj.Commands.Settings;
-using CleanupBinObj.Support;
+using BuildCleaner.Commands.Settings;
+using BuildCleaner.Support;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Spectre.Console.Cli;
