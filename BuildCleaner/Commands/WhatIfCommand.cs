@@ -1,5 +1,6 @@
 ﻿namespace BuildCleaner.Commands;
 
+using System;
 using System.Threading.Tasks;
 using BuildCleaner.Support;
 using Microsoft.Extensions.Logging;
@@ -29,17 +30,60 @@ public class WhatIfCommand : AsyncCommand<Settings>
         options.DisplayAccessErrors = settings.DisplayAccessErrors;
         options.DisplayBaseFolder = settings.DisplayBaseFolder;
 
+        var deleteAll = false;
+
         RecursiveFolderLocator.Visit(
             settings.RootLocation,
             (folder) =>
             {
-                if (!settings.Interactive || AnsiConsole.Confirm($"Delete folder {folder}?"))
+                var action = deleteAll
+                    ? Action.Delete
+                    : Prompt(folder, settings);
+
+                switch (action)
                 {
-                    AnsiConsole.MarkupLine($"WhatIf: [red][[DELETE]][/] {folder}");
+                    case Action.Delete:
+                        AnsiConsole.MarkupLine($"WhatIf: [red][[DELETE]][/] {folder}");
+                        break;
+                    case Action.DeleteAll:
+                        AnsiConsole.MarkupLine($"WhatIf: [red][[DELETE]][/] {folder}");
+                        deleteAll = true;
+                        break;
+                    case Action.DeleteNothing:
+                        return false;
                 }
+
+                return true;
             },
             options);
 
         return Task.FromResult(0);
+    }
+
+    private Action Prompt(string folder, Settings settings) =>
+        settings.Interactive
+            ? AnsiConsole.Prompt(
+                    new TextPrompt<string>($"Delete folder [yellow]{folder}[/]?")
+                        .InvalidChoiceMessage("Not a valid action")
+                        .DefaultValue("yes")
+                        .AddChoice("no")
+                        .AddChoice("all")
+                        .AddChoice("none")) switch
+                {
+                    "yes" => Action.Delete,
+                    "no" => Action.Keep,
+                    "all" => Action.DeleteAll,
+                    "none" => Action.DeleteNothing,
+                    _ => Action.Unknown,
+                }
+            : Action.Delete;
+
+    private enum Action
+    {
+        Delete,
+        Keep,
+        DeleteAll,
+        DeleteNothing,
+        Unknown,
     }
 }

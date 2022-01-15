@@ -41,7 +41,7 @@ public class RecursiveFolderLocator
 
     public Options DefaultOptions => new Options();
 
-    public void Visit(string rootLocation, Action<string> callback, Options? options = null)
+    public void Visit(string rootLocation, Func<string,bool> callback, Options? options = null)
     {
         var root = EnsureAbsolutePath(rootLocation);
         options ??= DefaultOptions;
@@ -54,7 +54,11 @@ public class RecursiveFolderLocator
 
         foreach (var folder in GetFoldersRecursively(root))
         {
-            callback(folder);
+            var @continue = callback(folder);
+            if (!@continue)
+            {
+                break;
+            }
         }
 
         if (options.DisplayAccessErrors && AccessErrors.Any())
