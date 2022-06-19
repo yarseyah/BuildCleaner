@@ -21,7 +21,7 @@ public class RecursiveFolderLocator
     public async Task VisitAsync(
         string rootLocation, 
         Func<string, Task<bool>> visitorFunc,
-        Func<string, bool>? selectorFunc = null,
+        Func<string, Task<bool>> selectorFunc,
         Options? options = null)
     {
         var root = EnsureAbsolutePath(rootLocation);
@@ -33,7 +33,7 @@ public class RecursiveFolderLocator
             AnsiConsole.WriteLine();
         }
 
-        foreach (var folder in GetFoldersRecursively(root, selectorFunc))
+        await foreach (var folder in GetFoldersRecursively(root, selectorFunc))
         {
             var @continue = await visitorFunc(folder);
             if (!@continue)
@@ -59,27 +59,23 @@ public class RecursiveFolderLocator
         }
     }
 
-    private IEnumerable<string> GetFoldersRecursively(string root, Func<string, bool>? selectorFunc)
+    private async IAsyncEnumerable<string> GetFoldersRecursively(string root, Func<string, Task<bool>> selectorFunc)
     {
-        var subFolders =
-            GetFolders(root)
-                .Select(folder => (
-                    Name: folder,
-                    IsTarget: selectorFunc?.Invoke(Path.GetFileName(folder)) ?? true));
+        var subFolders = GetFolders(root);
 
-        foreach (var (name, isTarget) in subFolders)
+        foreach (var folder in subFolders)
         {
-            var excluded = ExclusionRules.Enforce(name);
+            var excluded = ExclusionRules.Enforce(folder);
             var excludeSelf = (excluded & Exclusion.ExcludeSelf) == Exclusion.ExcludeSelf;
             var excludeChildren = (excluded & Exclusion.ExcludeSelf) == Exclusion.ExcludeSelf;
 
-            if (isTarget && !excludeSelf)
+            if (await selectorFunc(folder) && !excludeSelf)
             {
-                yield return name;
+                yield return folder;
             }
             else if (!excludeChildren)
             {
-                foreach (var child in GetFoldersRecursively(name, selectorFunc))
+                await foreach (var child in GetFoldersRecursively(folder, selectorFunc))
                 {
                     yield return child;
                 }

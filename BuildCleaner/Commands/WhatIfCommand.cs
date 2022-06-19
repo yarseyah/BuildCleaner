@@ -24,7 +24,7 @@ public class WhatIfCommand : AsyncCommand<Settings>
     
     private FolderSizeCalculator FolderSizeCalculator { get; }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+ public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         AnsiConsole.WriteLine("WhatIf shows the folders the would be deleted when using the 'delete' command");
         AnsiConsole.WriteLine();
@@ -35,15 +35,10 @@ public class WhatIfCommand : AsyncCommand<Settings>
 
         showSizes = settings.ShowSizes;
         var deleteAll = false;
-
-        // TODO: this needs to be injected
-        var targetFolders = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase)
-        {
-            "bin",
-            "obj",
-            "testresults",
-        };
-
+        
+        // TODO: use DI to bring this in
+        FolderSelector selector = new();
+        
         await RecursiveFolderLocator.VisitAsync(
             settings.RootLocation, async (folder) =>
             {
@@ -65,8 +60,8 @@ public class WhatIfCommand : AsyncCommand<Settings>
                 }
 
                 return true;
-            },
-            folderName => targetFolders.Contains(folderName),
+            }, 
+            async folder => await selector.SelectFolderAsync(folder),
             options);
 
         if (showSizes)
@@ -122,5 +117,24 @@ public class WhatIfCommand : AsyncCommand<Settings>
         DeleteAll,
         DeleteNothing,
         Unknown,
+    }
+
+    private class FolderSelector
+    {
+        private IReadOnlyCollection<string> TargetFolders { get; } =
+            new HashSet<string>(StringComparer.CurrentCultureIgnoreCase)
+            {
+                "bin",
+                "obj",
+                "testresults",
+            };
+
+        public Task<bool> SelectFolderAsync(string fullFolderPath)
+        {
+            // Get the last part of the path (GetFileName will do this) and
+            // see if it is in the list of folders to delete
+            var folderName = Path.GetFileName(fullFolderPath);
+            return Task.FromResult(TargetFolders.Contains(folderName));
+        }
     }
 }
