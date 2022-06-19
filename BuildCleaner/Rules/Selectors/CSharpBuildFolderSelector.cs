@@ -1,6 +1,6 @@
 ﻿namespace BuildCleaner.Rules.Selectors;
 
-public class CSharpBuildFolderSelector
+public class CSharpBuildFolderSelector : IFolderSelector
 {
     public CSharpBuildFolderSelector(ILogger<CSharpBuildFolderSelector> logger)
     {

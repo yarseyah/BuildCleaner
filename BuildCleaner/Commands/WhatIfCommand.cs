@@ -12,7 +12,7 @@ public class WhatIfCommand : AsyncCommand<Settings>
         ILogger<WhatIfCommand> logger,
         RecursiveFolderLocator recursiveFolderLocator,
         FolderSizeCalculator folderSizeCalculator,
-        CSharpBuildFolderSelector folderSelector)
+        IFolderSelector folderSelector)
     {
         Logger = logger;
         RecursiveFolderLocator = recursiveFolderLocator;
@@ -26,7 +26,7 @@ public class WhatIfCommand : AsyncCommand<Settings>
     
     private FolderSizeCalculator FolderSizeCalculator { get; }
     
-    private CSharpBuildFolderSelector FolderSelector { get; }
+    private IFolderSelector FolderSelector { get; }
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {

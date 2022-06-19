@@ -28,7 +28,7 @@ serviceCollection.Configure<ExclusionsConfiguration>(
         .Bind(options));
 serviceCollection.AddTransient<ExclusionRules>();
 
-serviceCollection.AddTransient<CSharpBuildFolderSelector>();
+serviceCollection.AddTransient<IFolderSelector, CSharpBuildFolderSelector>();
 serviceCollection.AddTransient<FolderSizeCalculator>();
 serviceCollection.AddTransient<RecursiveFolderLocator>();
 
