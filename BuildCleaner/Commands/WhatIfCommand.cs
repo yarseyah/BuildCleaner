@@ -78,7 +78,6 @@ public class WhatIfCommand : AsyncCommand<Settings>
     {
         var size = 0L;
 
-        AnsiConsole.MarkupLine($"WhatIf: [red][[DELETE]][/] {folder}");
         if (showSizes)
         {
             await AnsiConsole.Status()
@@ -89,10 +88,14 @@ public class WhatIfCommand : AsyncCommand<Settings>
                     totalSize += size;
                 });
 
-            AnsiConsole.MarkupLine(size == 0
-                ? $"WhatIf: {folder} contains no files, including subfolders."
-                : $"WhatIf: {folder} consumes [yellow]({size.Bytes().ToFullWords()})[/]");
+            var sizeOutput = size == 0 ? "empty" : size.Bytes().ToFullWords();
+            AnsiConsole.MarkupLine($"WhatIf: [red][[DELETE]][/] {folder} [yellow]{sizeOutput}[/]");
         }
+        else
+        {
+            AnsiConsole.MarkupLine($"WhatIf: [red][[DELETE]][/] {folder}");
+        }
+        
     }
 
     private Action Prompt(string folder, Settings settings) =>
