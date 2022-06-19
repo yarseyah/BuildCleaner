@@ -65,16 +65,22 @@ public class RecursiveFolderLocator
 
         foreach (var folder in subFolders)
         {
+            Logger.LogTrace("Found folder {Folder}", folder);
             var excluded = ExclusionRules.Enforce(folder);
             var excludeSelf = (excluded & Exclusion.ExcludeSelf) == Exclusion.ExcludeSelf;
             var excludeChildren = (excluded & Exclusion.ExcludeSelf) == Exclusion.ExcludeSelf;
 
-            if (await selectorFunc(folder) && !excludeSelf)
+            // Use the delegate to determine if we should visit this folder
+            var shouldVisit = await selectorFunc(folder);
+            
+            if (shouldVisit && !excludeSelf)
             {
+                Logger.LogTrace("Visiting folder {Folder}", folder);
                 yield return folder;
             }
             else if (!excludeChildren)
             {
+                Logger.LogTrace("Calling children of folder {Folder}", folder);
                 await foreach (var child in GetFoldersRecursively(folder, selectorFunc))
                 {
                     yield return child;

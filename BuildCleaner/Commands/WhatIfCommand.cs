@@ -44,23 +44,29 @@ public class WhatIfCommand : AsyncCommand<Settings>
         showSizes = settings.ShowSizes;
         var deleteAll = false;
 
+        // Configure the 'activity' response from users, if non-interactive, default to 'Delete'
+        Func<string, Activity> activity = settings.Interactive ? Prompt : _ => Activity.Delete;
+
         await RecursiveFolderLocator.VisitAsync(
-            settings.RootLocation, async (folder) =>
+            settings.RootLocation,
+            async (folder) =>
             {
-                var action = deleteAll
-                    ? Action.Delete
-                    : Prompt(folder, settings);
+                Logger.LogTrace("Visiting {Folder}", folder);
+                
+                // Get the desired activity for this folder, if 'all' has previously been selected,
+                // short-circuit the prompt and return 'Delete'
+                var action = deleteAll ? Activity.Delete : activity(folder);
 
                 switch (action)
                 {
-                    case Action.Delete:
+                    case Activity.Delete:
                         await WhatIfDeleteFolder(folder);
                         break;
-                    case Action.DeleteAll:
+                    case Activity.DeleteAll:
                         await WhatIfDeleteFolder(folder);
                         deleteAll = true;
                         break;
-                    case Action.DeleteNothing:
+                    case Activity.DeleteNothing:
                         return false;
                 }
 
@@ -102,26 +108,24 @@ public class WhatIfCommand : AsyncCommand<Settings>
 
     }
 
-    private Action Prompt(string folder, Settings settings) =>
-        settings.Interactive
-            ? AnsiConsole.Prompt(
-                    new TextPrompt<string>($"Delete folder [yellow]{folder}[/]?")
-                        .InvalidChoiceMessage("Not a valid action")
-                        .DefaultValue("yes")
-                        .AddChoice("yes")
-                        .AddChoice("no")
-                        .AddChoice("all")
-                        .AddChoice("none")) switch
-                {
-                    "yes" => Action.Delete,
-                    "no" => Action.Keep,
-                    "all" => Action.DeleteAll,
-                    "none" => Action.DeleteNothing,
-                    _ => Action.Unknown,
-                }
-            : Action.Delete;
-
-    private enum Action
+    private static Activity Prompt(string folder) =>
+        AnsiConsole.Prompt(
+                new TextPrompt<string>($"Delete folder [yellow]{folder}[/]?")
+                    .InvalidChoiceMessage("Not a valid action")
+                    .DefaultValue("yes")
+                    .AddChoice("yes")
+                    .AddChoice("no")
+                    .AddChoice("all")
+                    .AddChoice("none")) switch
+            {
+                "yes" => Activity.Delete,
+                "no" => Activity.Keep,
+                "all" => Activity.DeleteAll,
+                "none" => Activity.DeleteNothing,
+                _ => Activity.Unknown,
+            };
+ 
+    private enum Activity
     {
         Delete,
         Keep,
