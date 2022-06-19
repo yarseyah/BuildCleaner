@@ -1,7 +1,5 @@
 ﻿namespace BuildCleaner.Rules.Exclude;
 
-using System;
-
 [Flags]
 public enum Exclusion
 {

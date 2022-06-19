@@ -1,8 +1,6 @@
 namespace BuildCleaner.Rules.Exclude;
 
-using System.IO;
-
-public class ExcludeDotFolders : IExclusionRule
+public class ExcludeDotFoldersRule : IExclusionRule
 {
     public Exclusion ShouldExclude(string path)
     {

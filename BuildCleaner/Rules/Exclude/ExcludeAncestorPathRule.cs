@@ -1,6 +1,5 @@
 ﻿namespace BuildCleaner.Rules.Exclude;
 
-using System.IO;
 using System.Reflection;
 
 public class ExcludeAncestorPathRule : IExclusionRule

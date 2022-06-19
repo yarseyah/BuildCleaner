@@ -1,8 +1,5 @@
 ﻿namespace BuildCleaner.Rules.Exclude;
 
-using System;
-using System.IO;
-
 public class ExcludeSubtreeRule : IExclusionRule
 {
     public ExcludeSubtreeRule(string name)

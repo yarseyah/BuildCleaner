@@ -1,11 +1,7 @@
 ﻿namespace BuildCleaner.Commands;
 
-using System;
 using System.ComponentModel;
-using System.IO;
 using System.Reflection;
-using Spectre.Console;
-using Spectre.Console.Cli;
 
 public class Settings : CommandSettings
 {

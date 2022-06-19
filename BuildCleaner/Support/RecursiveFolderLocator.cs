@@ -1,13 +1,8 @@
 ﻿namespace BuildCleaner.Support;
 
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using BuildCleaner.Rules.Exclude;
-using Microsoft.Extensions.Logging;
-using Spectre.Console;
 
 public class RecursiveFolderLocator
 {

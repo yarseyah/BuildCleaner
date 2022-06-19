@@ -1,12 +1,5 @@
 ﻿namespace BuildCleaner.Commands;
 
-using System;
-using System.Threading.Tasks;
-using BuildCleaner.Support;
-using Microsoft.Extensions.Logging;
-using Spectre.Console;
-using Spectre.Console.Cli;
-
 public class WhatIfCommand : AsyncCommand<Settings>
 {
     public WhatIfCommand(

@@ -1,8 +1,6 @@
 namespace BuildCleaner.Rules.Exclude;
 
-using System.IO;
-
-public class ExcludeSymbolicLinks : IExclusionRule
+public class ExcludeSymbolicLinksRule : IExclusionRule
 {
     public Exclusion ShouldExclude(string path)
     {

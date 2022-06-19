@@ -1,42 +1,40 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using BuildCleaner.Commands;
-using BuildCleaner.Rules.Exclude;
-using BuildCleaner.Support;
-using Spectre.Console.Cli;
-using Spectre.Cli.Extensions.DependencyInjection;
+﻿// Set up configuration with support for Json configuration and environment variables which
+// need to be prefixed with "BUILDCLEANER_"
+var configurationBuilder = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json")
+    .AddEnvironmentVariables("BUILDCLEANER_");
 
-var serviceCollection = new ServiceCollection()
-    .AddLogging(configure =>
-    {
-        configure.AddSimpleConsole(opts =>
-        {
-            opts.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
-        });
-        configure.SetMinimumLevel(LogLevel.Error);
-    });
+var config = configurationBuilder.Build();
 
-// TODO: need to construct this in a more DI way
-serviceCollection.AddTransient(
-    _ => new IExclusionRule[]
-        {
-            new ExcludeAncestorPathRule(),
-            new ExcludeSubtreeRule(".git"),
-            new ExcludeSubtreeRule("node_modules"),
-            new ExcludeSymbolicLinks(),
-            new ExcludeDotFolders(),
-        });
+// Build up the DI container
+var serviceCollection = new ServiceCollection();
+    
+// Add logging support to DI container
+serviceCollection.AddLogging(logging =>
+{
+    logging.AddConfiguration(config.GetSection("Logging"));
+    logging.AddConsole();
+    logging.AddDebug();
+});
+
+// Configure the exclusion rules
+serviceCollection.Configure<ExclusionsConfiguration>(
+    options => config
+        .GetSection("ExclusionRules")
+        .Bind(options));
 serviceCollection.AddTransient<ExclusionRules>();
+
 serviceCollection.AddTransient<RecursiveFolderLocator>();
 
 using var registrar = new DependencyInjectionRegistrar(serviceCollection);
 var app = new CommandApp(registrar);
 
 app.Configure(
-    config =>
+    configurator =>
     {
-        config.ValidateExamples();
-        config.AddCommand<WhatIfCommand>("whatif")
+        configurator.ValidateExamples();
+        configurator.AddCommand<WhatIfCommand>("whatif")
             .WithDescription("Show the folders to be deleted")
             .WithExample(new[]
             {
