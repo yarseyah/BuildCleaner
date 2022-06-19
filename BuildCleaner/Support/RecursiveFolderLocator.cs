@@ -1,9 +1,5 @@
 ﻿namespace BuildCleaner.Support;
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-
 public class RecursiveFolderLocator
 {
     public RecursiveFolderLocator(
@@ -36,7 +32,7 @@ public class RecursiveFolderLocator
 
     public Options DefaultOptions => new Options();
 
-    public void Visit(string rootLocation, Func<string,bool> callback, Options? options = null)
+    public async Task VisitAsync(string rootLocation, Func<string, Task<bool>> callback, Options? options = null)
     {
         var root = EnsureAbsolutePath(rootLocation);
         options ??= DefaultOptions;
@@ -49,18 +45,27 @@ public class RecursiveFolderLocator
 
         foreach (var folder in GetFoldersRecursively(root))
         {
-            var @continue = callback(folder);
+            var @continue = await callback(folder);
             if (!@continue)
             {
                 break;
             }
         }
 
-        if (options.DisplayAccessErrors && AccessErrors.Any())
+        if (options.DisplayAccessErrors)
         {
             AnsiConsole.WriteLine();
-            AnsiConsole.MarkupLine("[aqua]The following locations reported an access problem[/]");
-            AccessErrors.ForEach(e => AnsiConsole.MarkupLine($" * [red]{e}[/]"));
+
+            if (AccessErrors.Any())
+            {
+                AnsiConsole.MarkupLine("[aqua]The following locations reported an access problem[/]");
+                AccessErrors.ForEach(e => AnsiConsole.MarkupLine($" * [red]{e}[/]"));
+            }
+            else
+            {
+                AnsiConsole.MarkupLine(
+                    "[aqua]No folders reported an access problem, however on deletion subfolders may[/]");
+            }
         }
     }
 
@@ -98,7 +103,7 @@ public class RecursiveFolderLocator
         }
         catch (Exception e)
         {
-            var logging = e is UnauthorizedAccessException ? LogLevel.Warning : LogLevel.Error;
+            var logging = e is UnauthorizedAccessException ? LogLevel.Trace : LogLevel.Error;
             Logger.Log(logging, e, "Problem getting directories: {Root}", parent);
             AccessErrors.Add(parent);
             return Array.Empty<string>();

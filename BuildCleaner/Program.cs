@@ -25,6 +25,7 @@ serviceCollection.Configure<ExclusionsConfiguration>(
         .Bind(options));
 serviceCollection.AddTransient<ExclusionRules>();
 
+serviceCollection.AddTransient<FolderSizeCalculator>();
 serviceCollection.AddTransient<RecursiveFolderLocator>();
 
 using var registrar = new DependencyInjectionRegistrar(serviceCollection);

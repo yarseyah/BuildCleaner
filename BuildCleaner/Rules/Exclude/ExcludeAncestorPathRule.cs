@@ -1,7 +1,5 @@
 ﻿namespace BuildCleaner.Rules.Exclude;
 
-using System.Reflection;
-
 public class ExcludeAncestorPathRule : IExclusionRule
 {
     private static readonly string? EntryAssembly =

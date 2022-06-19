@@ -1,7 +1,5 @@
 ﻿namespace BuildCleaner.Rules.Exclude;
 
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Options;
 
 public class ExclusionRules

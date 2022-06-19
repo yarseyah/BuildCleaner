@@ -1,7 +1,6 @@
 ﻿namespace BuildCleaner.Commands;
 
 using System.ComponentModel;
-using System.Reflection;
 
 public class Settings : CommandSettings
 {
@@ -16,14 +15,19 @@ public class Settings : CommandSettings
     public bool DisplayAccessErrors { get; set; }
 
     [CommandOption("-d|--displayFolder")]
-    [Description("Show the base folder (defaults to true, inhibit it with --displayFolder false)")]
-    [DefaultValue(true)]
+    [Description("Show the base folder")]
+    [DefaultValue(false)]
     public bool DisplayBaseFolder { get; set; }
 
     [CommandOption("-i|--interactive|-p|--prompt")]
     [Description("Interactive mode, prompts for confirmation for each folder")]
     [DefaultValue(false)]
     public bool Interactive { get; set; }
+    
+    [CommandOption("-s|--showSizes")]
+    [Description("Show the size of each folder")]
+    [DefaultValue(false)]
+    public bool ShowSizes { get; set; }
 
     public override ValidationResult Validate()
     {
