@@ -1,13 +1,18 @@
 ﻿namespace BuildCleaner.Commands;
 
+using System.Diagnostics.CodeAnalysis;
 using BuildCleaner.Rules.Selectors;
 
+[SuppressMessage(
+    "ReSharper",
+    "ClassNeverInstantiated.Global",
+    Justification = "Invoked by Spectre.Console for 'WhatIf' command options")]
 public class WhatIfCommand : AsyncCommand<Settings>
 {
-    private bool showSizes = false;
-    
-    private long totalSize = 0;
-    
+    private bool showSizes;
+
+    private long totalSize;
+
     public WhatIfCommand(
         ILogger<WhatIfCommand> logger,
         RecursiveFolderLocator recursiveFolderLocator,
@@ -23,13 +28,15 @@ public class WhatIfCommand : AsyncCommand<Settings>
     private ILogger<WhatIfCommand> Logger { get; }
 
     private RecursiveFolderLocator RecursiveFolderLocator { get; }
-    
+
     private FolderSizeCalculator FolderSizeCalculator { get; }
-    
+
     private IFolderSelector FolderSelector { get; }
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
+        Logger.LogTrace("Invoked {Command}", nameof(WhatIfCommand));
+
         AnsiConsole.WriteLine("WhatIf shows the folders the would be deleted when using the 'delete' command");
         AnsiConsole.WriteLine();
 
@@ -39,7 +46,7 @@ public class WhatIfCommand : AsyncCommand<Settings>
 
         showSizes = settings.ShowSizes;
         var deleteAll = false;
-        
+
         await RecursiveFolderLocator.VisitAsync(
             settings.RootLocation, async (folder) =>
             {
@@ -61,7 +68,7 @@ public class WhatIfCommand : AsyncCommand<Settings>
                 }
 
                 return true;
-            }, 
+            },
             async folder => await FolderSelector.SelectFolderAsync(folder),
             options);
 
@@ -81,7 +88,7 @@ public class WhatIfCommand : AsyncCommand<Settings>
         if (showSizes)
         {
             await AnsiConsole.Status()
-                .StartAsync("Calculating folder size...", async ctx =>
+                .StartAsync("Calculating folder size...", async _ =>
                 {
                     // TODO: we could easily use a callback to get the latest size
                     size = await FolderSizeCalculator.GetFolderSizeAsync(folder);
@@ -95,7 +102,7 @@ public class WhatIfCommand : AsyncCommand<Settings>
         {
             AnsiConsole.MarkupLine($"WhatIf: [red][[DELETE]][/] {folder}");
         }
-        
+
     }
 
     private Action Prompt(string folder, Settings settings) =>
