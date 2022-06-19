@@ -36,6 +36,14 @@ public class WhatIfCommand : AsyncCommand<Settings>
         showSizes = settings.ShowSizes;
         var deleteAll = false;
 
+        // TODO: this needs to be injected
+        var targetFolders = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase)
+        {
+            "bin",
+            "obj",
+            "testresults",
+        };
+
         await RecursiveFolderLocator.VisitAsync(
             settings.RootLocation, async (folder) =>
             {
@@ -58,6 +66,7 @@ public class WhatIfCommand : AsyncCommand<Settings>
 
                 return true;
             },
+            folderName => targetFolders.Contains(folderName),
             options);
 
         if (showSizes)

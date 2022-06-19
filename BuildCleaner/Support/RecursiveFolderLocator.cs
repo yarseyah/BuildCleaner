@@ -8,31 +8,21 @@ public class RecursiveFolderLocator
     {
         Logger = logger;
         ExclusionRules = exclusionRules;
-
-        var targetFolders = new[]
-        {
-            "bin",
-            "obj",
-            "testresults",
-        };
-
-        foreach (var targetFolder in targetFolders)
-        {
-            TargetFolders.Add(targetFolder);
-        }
     }
 
     private ILogger<RecursiveFolderLocator> Logger { get; }
 
     private ExclusionRules ExclusionRules { get; }
 
-    private HashSet<string> TargetFolders { get; } = new(StringComparer.CurrentCultureIgnoreCase);
-
     private List<string> AccessErrors { get; } = new();
 
     public Options DefaultOptions => new Options();
 
-    public async Task VisitAsync(string rootLocation, Func<string, Task<bool>> callback, Options? options = null)
+    public async Task VisitAsync(
+        string rootLocation, 
+        Func<string, Task<bool>> visitorFunc,
+        Func<string, bool>? selectorFunc = null,
+        Options? options = null)
     {
         var root = EnsureAbsolutePath(rootLocation);
         options ??= DefaultOptions;
@@ -43,9 +33,9 @@ public class RecursiveFolderLocator
             AnsiConsole.WriteLine();
         }
 
-        foreach (var folder in GetFoldersRecursively(root))
+        foreach (var folder in GetFoldersRecursively(root, selectorFunc))
         {
-            var @continue = await callback(folder);
+            var @continue = await visitorFunc(folder);
             if (!@continue)
             {
                 break;
@@ -69,25 +59,27 @@ public class RecursiveFolderLocator
         }
     }
 
-    private IEnumerable<string> GetFoldersRecursively(string root)
+    private IEnumerable<string> GetFoldersRecursively(string root, Func<string, bool>? selectorFunc)
     {
-        IEnumerable<(string Folder, bool IsTarget)> folders =
-            SafelyGetSubDirectories(root)
-                .Select(f => (Folders: f, IsTarget: TargetFolders.Contains(Path.GetFileName(f))));
+        var subFolders =
+            GetFolders(root)
+                .Select(folder => (
+                    Name: folder,
+                    IsTarget: selectorFunc?.Invoke(Path.GetFileName(folder)) ?? true));
 
-        foreach (var folder in folders)
+        foreach (var (name, isTarget) in subFolders)
         {
-            var excluded = ExclusionRules.Enforce(folder.Folder);
+            var excluded = ExclusionRules.Enforce(name);
             var excludeSelf = (excluded & Exclusion.ExcludeSelf) == Exclusion.ExcludeSelf;
             var excludeChildren = (excluded & Exclusion.ExcludeSelf) == Exclusion.ExcludeSelf;
 
-            if (folder.IsTarget && !excludeSelf)
+            if (isTarget && !excludeSelf)
             {
-                yield return folder.Folder;
+                yield return name;
             }
             else if (!excludeChildren)
             {
-                foreach (var child in GetFoldersRecursively(folder.Folder))
+                foreach (var child in GetFoldersRecursively(name, selectorFunc))
                 {
                     yield return child;
                 }
@@ -95,7 +87,7 @@ public class RecursiveFolderLocator
         }
     }
 
-    private string[] SafelyGetSubDirectories(string parent)
+    private string[] GetFolders(string parent)
     {
         try
         {
