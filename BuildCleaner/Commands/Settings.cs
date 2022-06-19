@@ -1,7 +1,5 @@
 ﻿namespace BuildCleaner.Commands;
 
-using System.ComponentModel;
-
 public class Settings : CommandSettings
 {
     [CommandArgument(0, "[path]")]

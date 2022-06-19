@@ -1,7 +1,5 @@
 ﻿namespace BuildCleaner.Rules.Exclude;
 
-using Microsoft.Extensions.Options;
-
 public class ExclusionRules
 {
     private List<IExclusionRule> Rules = new();

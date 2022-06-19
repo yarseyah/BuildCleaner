@@ -1,8 +1,6 @@
 ﻿// Set up configuration with support for Json configuration and environment variables which
 // need to be prefixed with "BUILDCLEANER_"
 
-using BuildCleaner.Rules.Selectors;
-
 var configurationBuilder = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json")

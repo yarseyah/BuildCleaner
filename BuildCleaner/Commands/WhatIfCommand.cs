@@ -1,8 +1,5 @@
 ﻿namespace BuildCleaner.Commands;
 
-using System.Diagnostics.CodeAnalysis;
-using BuildCleaner.Rules.Selectors;
-
 [SuppressMessage(
     "ReSharper",
     "ClassNeverInstantiated.Global",
