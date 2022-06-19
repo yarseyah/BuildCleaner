@@ -50,10 +50,10 @@ public class WhatIfCommand : AsyncCommand<Settings>
                 switch (action)
                 {
                     case Action.Delete:
-                        await DeleteFolder(folder);
+                        await WhatIfDeleteFolder(folder);
                         break;
                     case Action.DeleteAll:
-                        await DeleteFolder(folder);
+                        await WhatIfDeleteFolder(folder);
                         deleteAll = true;
                         break;
                     case Action.DeleteNothing:
@@ -74,7 +74,7 @@ public class WhatIfCommand : AsyncCommand<Settings>
         return 0;
     }
 
-    private async Task DeleteFolder(string folder)
+    private async Task WhatIfDeleteFolder(string folder)
     {
         var size = 0L;
 
