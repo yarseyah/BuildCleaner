@@ -1,6 +1,5 @@
 ﻿// Set up configuration with support for Json configuration and environment variables which
 // need to be prefixed with "BUILDCLEANER_"
-
 var configurationBuilder = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json")
@@ -30,20 +29,5 @@ serviceCollection.AddTransient<IFolderSelector, CSharpBuildFolderSelector>();
 serviceCollection.AddTransient<FolderSizeCalculator>();
 serviceCollection.AddTransient<RecursiveFolderLocator>();
 
-using var registrar = new DependencyInjectionRegistrar(serviceCollection);
-var app = new CommandApp(registrar);
-
-app.Configure(
-    configurator =>
-    {
-        configurator.ValidateExamples();
-        configurator.AddCommand<WhatIfCommand>("whatif")
-            .WithDescription("Show the folders to be deleted")
-            .WithExample(new[]
-            {
-                "whatif",
-                "."
-            });
-    });
-
-return await app.RunAsync(args);
+var consoleApp = serviceCollection.UseSpectreCommandLine();
+return await consoleApp.RunAsync(args);

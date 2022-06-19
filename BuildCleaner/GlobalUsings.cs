@@ -8,6 +8,7 @@ global using System.IO;
 global using System.Linq;
 global using System.Reflection;
 global using System.Threading.Tasks;
+global using BuildCleaner;
 global using BuildCleaner.Commands;
 global using BuildCleaner.Rules.Exclude;
 global using BuildCleaner.Rules.Selectors;
