@@ -9,6 +9,7 @@ global using System.Threading.Tasks;
 global using BuildCleaner.Commands;
 global using BuildCleaner.Rules.Exclude;
 global using BuildCleaner.Support;
+global using Humanizer;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;

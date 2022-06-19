@@ -1,6 +1,6 @@
 ﻿namespace BuildCleaner.Commands;
 
-using Humanizer;
+using BuildCleaner.Rules.Selectors;
 
 public class WhatIfCommand : AsyncCommand<Settings>
 {
@@ -11,11 +11,13 @@ public class WhatIfCommand : AsyncCommand<Settings>
     public WhatIfCommand(
         ILogger<WhatIfCommand> logger,
         RecursiveFolderLocator recursiveFolderLocator,
-        FolderSizeCalculator folderSizeCalculator)
+        FolderSizeCalculator folderSizeCalculator,
+        CSharpBuildFolderSelector folderSelector)
     {
         Logger = logger;
         RecursiveFolderLocator = recursiveFolderLocator;
         FolderSizeCalculator = folderSizeCalculator;
+        FolderSelector = folderSelector;
     }
 
     private ILogger<WhatIfCommand> Logger { get; }
@@ -23,8 +25,10 @@ public class WhatIfCommand : AsyncCommand<Settings>
     private RecursiveFolderLocator RecursiveFolderLocator { get; }
     
     private FolderSizeCalculator FolderSizeCalculator { get; }
+    
+    private CSharpBuildFolderSelector FolderSelector { get; }
 
- public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         AnsiConsole.WriteLine("WhatIf shows the folders the would be deleted when using the 'delete' command");
         AnsiConsole.WriteLine();
@@ -35,9 +39,6 @@ public class WhatIfCommand : AsyncCommand<Settings>
 
         showSizes = settings.ShowSizes;
         var deleteAll = false;
-        
-        // TODO: use DI to bring this in
-        FolderSelector selector = new();
         
         await RecursiveFolderLocator.VisitAsync(
             settings.RootLocation, async (folder) =>
@@ -61,7 +62,7 @@ public class WhatIfCommand : AsyncCommand<Settings>
 
                 return true;
             }, 
-            async folder => await selector.SelectFolderAsync(folder),
+            async folder => await FolderSelector.SelectFolderAsync(folder),
             options);
 
         if (showSizes)
@@ -75,10 +76,11 @@ public class WhatIfCommand : AsyncCommand<Settings>
 
     private async Task DeleteFolder(string folder)
     {
+        var size = 0L;
+
         AnsiConsole.MarkupLine($"WhatIf: [red][[DELETE]][/] {folder}");
         if (showSizes)
         {
-            long size = 0;
             await AnsiConsole.Status()
                 .StartAsync("Calculating folder size...", async ctx =>
                 {
@@ -87,7 +89,9 @@ public class WhatIfCommand : AsyncCommand<Settings>
                     totalSize += size;
                 });
 
-            AnsiConsole.MarkupLine($"WhatIf: {folder} consumes [yellow]({size.Bytes().ToFullWords()})[/]");
+            AnsiConsole.MarkupLine(size == 0
+                ? $"WhatIf: {folder} contains no files, including subfolders."
+                : $"WhatIf: {folder} consumes [yellow]({size.Bytes().ToFullWords()})[/]");
         }
     }
 
@@ -117,24 +121,5 @@ public class WhatIfCommand : AsyncCommand<Settings>
         DeleteAll,
         DeleteNothing,
         Unknown,
-    }
-
-    private class FolderSelector
-    {
-        private IReadOnlyCollection<string> TargetFolders { get; } =
-            new HashSet<string>(StringComparer.CurrentCultureIgnoreCase)
-            {
-                "bin",
-                "obj",
-                "testresults",
-            };
-
-        public Task<bool> SelectFolderAsync(string fullFolderPath)
-        {
-            // Get the last part of the path (GetFileName will do this) and
-            // see if it is in the list of folders to delete
-            var folderName = Path.GetFileName(fullFolderPath);
-            return Task.FromResult(TargetFolders.Contains(folderName));
-        }
     }
 }
