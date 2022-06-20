@@ -59,52 +59,56 @@ public class RecursiveFolderLocator
         }
     }
 
-    private async IAsyncEnumerable<string> GetFoldersRecursively(string root, Func<string, Task<bool>> selectorFunc)
+    private async IAsyncEnumerable<string> GetFoldersRecursively(
+        string root, 
+        Func<string, Task<bool>> selectorFunc,
+        int depth = 0)
     {
         var subFolders = GetFolders(root);
-
-        var folderCount = subFolders.Length;
-
+        var count = subFolders.Length;
+        var countdown = subFolders.Length;
+        var position = 0;
+     
         foreach (var folder in subFolders)
         {
-            Logger.LogTrace("Found folder {Folder}", folder);
+            Logger.LogTrace(
+                "[{Pos}/{Total}] Processing folder '{Folder}' (Depth = {Depth}) ",
+                position,
+                count,
+                folder, 
+                depth);
             var excluded = ExclusionRules.Enforce(folder);
             var excludeSelf = (excluded & Exclusion.ExcludeSelf) == Exclusion.ExcludeSelf;
             var excludeChildren = (excluded & Exclusion.ExcludeSelf) == Exclusion.ExcludeSelf;
 
             // Use the delegate to determine if we should visit this folder
-            var shouldVisit = await selectorFunc(folder);
+            var isBuildFolder = await selectorFunc(folder);
             
-            if (shouldVisit && !excludeSelf)
+            if (isBuildFolder && !excludeSelf)
             {
-                Logger.LogTrace("Visiting folder {Folder}", folder);
-
-                folderCount--;
-                
+                Logger.LogTrace("Visiting folder {Folder} [{Depth}]", folder, depth);
                 yield return folder;
             }
             else if (!excludeChildren)
             {
-                Logger.LogTrace("Calling children of folder {Folder}", folder);
-
-                folderCount--;
-                
-                await foreach (var child in GetFoldersRecursively(folder, selectorFunc))
+                Logger.LogTrace("Calling children of folder {Folder} [{Depth}]", folder, depth);
+                await foreach (var child in GetFoldersRecursively(folder, selectorFunc, depth+1))
                 {
                     yield return child;
                 }
             }
             else
             {
-                Logger.LogTrace("Folder {Name} is assumed to be excluded", folder);
-                folderCount--;
-
+                Logger.LogTrace("Folder {Name} is assumed to be excluded [{Depth}]", folder, depth);
             }
+
+            countdown--;
+            position++;
         }
 
-        if (folderCount > 0)
+        if (countdown > 0)
         {
-            Logger.LogWarning("{FolderCount} folders remain to be visited", folderCount);
+            Logger.LogWarning("{FolderCount} folders remain to be visited", countdown);
         }
     }
 
@@ -112,7 +116,13 @@ public class RecursiveFolderLocator
     {
         try
         {
-            return Directory.GetDirectories(parent);
+            var dirs = Directory.GetDirectories(parent);
+            Logger.LogDebug(
+                "From {Parent} found {Count} folders: {Dir}\n",
+                parent,
+                dirs.Length,
+                string.Join(Environment.NewLine, dirs.Select((d,i) => $"{i} - {d}")));
+            return dirs;
         }
         catch (Exception e)
         {

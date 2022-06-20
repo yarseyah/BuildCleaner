@@ -2,7 +2,7 @@
 
 public class ExclusionRules
 {
-    private List<IExclusionRule> Rules = new();
+    private readonly List<IExclusionRule> Rules = new();
 
     public ExclusionRules(
         IOptions<ExclusionsConfiguration> configuration,
@@ -11,11 +11,11 @@ public class ExclusionRules
         Logger = logger;
         var settings = configuration.Value;
 
-        if (settings.ExcludeAncestorPath)
-        {
-            Logger.LogTrace("Adding ancestor path exclusion rule");
-            Rules.Add(new ExcludeAncestorPathRule());
-        }
+        // if (settings.ExcludeAncestorPath)
+        // {
+        //     Logger.LogTrace("Adding ancestor path exclusion rule");
+        //     Rules.Add(new ExcludeAncestorPathRule());
+        // }
 
         if (settings.ExcludeSymbolicLinks)
         {

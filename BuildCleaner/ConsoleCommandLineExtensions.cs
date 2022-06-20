@@ -18,6 +18,7 @@ public static class ConsoleCommandLineExtensions
                         "whatif",
                         "."
                     });
+                configurator.SetExceptionHandler(exception => AnsiConsole.WriteException(exception));
             });
         return commandApp;
     }
