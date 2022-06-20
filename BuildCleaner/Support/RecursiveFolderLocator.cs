@@ -63,6 +63,8 @@ public class RecursiveFolderLocator
     {
         var subFolders = GetFolders(root);
 
+        var folderCount = subFolders.Length;
+
         foreach (var folder in subFolders)
         {
             Logger.LogTrace("Found folder {Folder}", folder);
@@ -76,16 +78,33 @@ public class RecursiveFolderLocator
             if (shouldVisit && !excludeSelf)
             {
                 Logger.LogTrace("Visiting folder {Folder}", folder);
+
+                folderCount--;
+                
                 yield return folder;
             }
             else if (!excludeChildren)
             {
                 Logger.LogTrace("Calling children of folder {Folder}", folder);
+
+                folderCount--;
+                
                 await foreach (var child in GetFoldersRecursively(folder, selectorFunc))
                 {
                     yield return child;
                 }
             }
+            else
+            {
+                Logger.LogTrace("Folder {Name} is assumed to be excluded", folder);
+                folderCount--;
+
+            }
+        }
+
+        if (folderCount > 0)
+        {
+            Logger.LogWarning("{FolderCount} folders remain to be visited", folderCount);
         }
     }
 
