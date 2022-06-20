@@ -38,10 +38,19 @@ public class ExclusionRules
 
     private ILogger<ExclusionRules> Logger { get; }
 
-    public Exclusion Enforce(string folder)
+    public Exclusion Enforce(string folder, Exclusion onException)
     {
-        return Rules.Aggregate(
-            Exclusion.None,
-            (current, rule) => current | rule.ShouldExclude(folder));
+        return Rules.Aggregate(Exclusion.None, (incoming, rule) =>
+        {
+            try
+            {
+                return incoming | rule.ShouldExclude(folder);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Error processing rule {Rule}", rule.GetType().Name);
+                return onException;
+            }
+        });
     }
 }

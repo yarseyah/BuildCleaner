@@ -77,7 +77,8 @@ public class RecursiveFolderLocator
                 count,
                 folder, 
                 depth);
-            var excluded = ExclusionRules.Enforce(folder);
+
+            var excluded = ExclusionRules.Enforce(folder, onException: Exclusion.ExcludeSelfAndChildren);
             var excludeSelf = (excluded & Exclusion.ExcludeSelf) == Exclusion.ExcludeSelf;
             var excludeChildren = (excluded & Exclusion.ExcludeSelf) == Exclusion.ExcludeSelf;
 
