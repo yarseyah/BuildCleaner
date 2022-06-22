@@ -140,11 +140,12 @@ public class RecursiveFolderLocator
         var entryAssembly = Assembly.GetEntryAssembly();
         return (root, entryAssembly) switch
         {
-            { root: ".", entryAssembly: not null } => (!string.IsNullOrWhiteSpace(entryAssembly.Location)
-                                                          ? Path.GetDirectoryName(entryAssembly.Location)
-                                                          : null) ??
-                                                      throw new NotSupportedException(
-                                                          "Seem to be missing entry assembly"),
+            { root: ".", entryAssembly: not null } =>
+                (!string.IsNullOrWhiteSpace(entryAssembly.Location)
+                    ? Path.GetDirectoryName(entryAssembly.Location)
+                    : null) ??
+                throw new NotSupportedException(
+                    "Seem to be missing entry assembly"),
             { root.Length: > 0 } when Directory.Exists(root) => Path.GetFullPath(root),
             { root.Length: > 0 } => throw new DirectoryNotFoundException($"Unable to find directory '{root}'"),
             _ => throw new ArgumentException("Unspecified issue with root folder supplied", nameof(root))
