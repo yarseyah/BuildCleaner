@@ -49,7 +49,11 @@ public class RecursiveFolderLocator
             if (AccessErrors.Any())
             {
                 AnsiConsole.MarkupLine("[aqua]The following locations reported an access problem[/]");
-                AccessErrors.ForEach(e => AnsiConsole.MarkupLine($" * [red]{e}[/]"));
+                AnsiConsole.WriteLine();
+                var table = new Table();
+                table.AddColumns("Error", "Location");
+                AccessErrors.ForEach(ae => table.AddRow("Todo", ae));
+                AnsiConsole.Write(table);
             }
             else
             {
