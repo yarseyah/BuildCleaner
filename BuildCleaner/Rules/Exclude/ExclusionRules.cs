@@ -11,11 +11,11 @@ public class ExclusionRules
         Logger = logger;
         var settings = configuration.Value;
 
-        // if (settings.ExcludeAncestorPath)
-        // {
-        //     Logger.LogTrace("Adding ancestor path exclusion rule");
-        //     Rules.Add(new ExcludeAncestorPathRule());
-        // }
+        if (settings.ExcludeAncestorPath)
+        {
+            Logger.LogTrace("Adding ancestor path exclusion rule");
+            Rules.Add(new ExcludeAncestorPathRule());
+        }
 
         if (settings.ExcludeSymbolicLinks)
         {
@@ -38,19 +38,8 @@ public class ExclusionRules
 
     private ILogger<ExclusionRules> Logger { get; }
 
-    public Exclusion Enforce(string folder, Exclusion onException)
-    {
-        return Rules.Aggregate(Exclusion.None, (incoming, rule) =>
-        {
-            try
-            {
-                return incoming | rule.ShouldExclude(folder);
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e, "Error processing rule {Rule}", rule.GetType().Name);
-                return onException;
-            }
-        });
-    }
+    public Exclusion Enforce(string folder) => Rules.Aggregate(Exclusion.None,
+        (incoming, rule) => incoming | rule.ShouldExclude(folder));
+    
+    public record ExceptionDetails(string Folder, Type Type, Exception Exception);
 }

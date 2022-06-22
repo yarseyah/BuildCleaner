@@ -78,9 +78,22 @@ public class RecursiveFolderLocator
                 folder, 
                 depth);
 
-            var excluded = ExclusionRules.Enforce(folder, onException: Exclusion.ExcludeSelfAndChildren);
+            Exclusion excluded;
+            
+            try
+            {
+                excluded = ExclusionRules.Enforce(folder);
+            }
+            catch (Exception)
+            {
+                AccessErrors.Add(folder);
+                countdown--;
+                position++;
+                continue;
+            }
+            
             var excludeSelf = (excluded & Exclusion.ExcludeSelf) == Exclusion.ExcludeSelf;
-            var excludeChildren = (excluded & Exclusion.ExcludeSelf) == Exclusion.ExcludeSelf;
+            var excludeChildren = (excluded & Exclusion.ExcludeChildren) == Exclusion.ExcludeChildren;
 
             // Use the delegate to determine if we should visit this folder
             var isBuildFolder = await selectorFunc(folder);
