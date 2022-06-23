@@ -19,10 +19,7 @@ serviceCollection.AddLogging(logging =>
 });
 
 // Configure the exclusion rules
-serviceCollection.Configure<ExclusionsConfiguration>(
-    options => config
-        .GetSection("ExclusionRules")
-        .Bind(options));
+serviceCollection.Configure<ExclusionsConfiguration>(config.GetSection("ExclusionRules"));
 serviceCollection.AddTransient<ExclusionRules>();
 
 serviceCollection.AddTransient<IFolderSelector, CSharpBuildFolderSelector>();
