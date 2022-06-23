@@ -14,7 +14,7 @@ public class RecursiveFolderLocator
 
     private ExclusionRules ExclusionRules { get; }
 
-    private List<string> AccessErrors { get; } = new();
+    private List<(Exception Exception, string Folder)> AccessErrors { get; } = new();
 
     public Options DefaultOptions => new Options();
 
@@ -52,7 +52,7 @@ public class RecursiveFolderLocator
                 AnsiConsole.WriteLine();
                 var table = new Table();
                 table.AddColumns("Error", "Location");
-                AccessErrors.ForEach(ae => table.AddRow("Todo", ae));
+                AccessErrors.ForEach(ae => table.AddRow(ae.Exception.GetType().Name, ae.Folder));
                 AnsiConsole.Write(table);
             }
             else
@@ -88,9 +88,9 @@ public class RecursiveFolderLocator
             {
                 excluded = ExclusionRules.Enforce(folder);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                AccessErrors.Add(folder);
+                AccessErrors.Add((e, folder));
                 countdown--;
                 position++;
                 continue;
@@ -146,7 +146,7 @@ public class RecursiveFolderLocator
         {
             var logging = e is UnauthorizedAccessException ? LogLevel.Trace : LogLevel.Error;
             Logger.Log(logging, e, "Problem getting directories: {Root}", parent);
-            AccessErrors.Add(parent);
+            AccessErrors.Add((e, parent));
             return Array.Empty<string>();
         }
     }
