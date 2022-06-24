@@ -1,5 +1,7 @@
 ﻿namespace BuildCleaner.Rules.Exclude;
 
+using BuildCleaner.Setup;
+
 public class ExclusionRules
 {
     private readonly List<IExclusionRule> Rules = new();
@@ -12,13 +14,13 @@ public class ExclusionRules
         Logger = logger;
         var settings = configuration.Value;
 
-        if (settings.ExcludeAncestorPath)
+        if (settings.AncestorPath)
         {
             Logger.LogTrace("Adding ancestor path exclusion rule");
             Rules.Add(new ExcludeAncestorPathRule());
         }
 
-        if (settings.ExcludeSymbolicLinks)
+        if (settings.SymbolicLinks)
         {
             Logger.LogTrace("Adding symbolic link exclusion rule");
             Rules.Add(new ExcludeSymbolicLinksRule());

@@ -1,5 +1,6 @@
 ﻿namespace BuildCleaner.Rules.Selectors;
 
+using BuildCleaner.Setup;
 using DotNet.Globbing;
 
 public class CSharpBuildFolderSelector : IFolderSelector

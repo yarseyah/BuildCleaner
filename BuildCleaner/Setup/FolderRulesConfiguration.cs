@@ -1,4 +1,4 @@
-﻿namespace BuildCleaner;
+﻿namespace BuildCleaner.Setup;
 
 public class FolderRulesConfiguration
 {

@@ -2,9 +2,7 @@
 
 public class ExclusionsConfiguration
 {
-    public bool ExcludeAncestorPath { get; set; }
+    public bool AncestorPath { get; set; }
 
-    public bool ExcludeSymbolicLinks { get; set; }
-    
-    public bool ExcludeDotFolders { get; set; }
+    public bool SymbolicLinks { get; set; }
 }

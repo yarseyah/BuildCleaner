@@ -1,5 +1,8 @@
 ﻿// Set up configuration with support for Json configuration and environment variables which
 // need to be prefixed with "BUILDCLEANER_"
+
+using BuildCleaner.Setup;
+
 var configurationBuilder = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json")
@@ -19,12 +22,10 @@ serviceCollection.AddLogging(logging =>
 });
 
 // Configure the exclusion rules
-serviceCollection.Configure<ExclusionsConfiguration>(config.GetSection("ExclusionRules"));
-serviceCollection.AddTransient<ExclusionRules>();
-
+serviceCollection.Configure<ExclusionsConfiguration>(config.GetSection("Exclude"));
 serviceCollection.Configure<FolderRulesConfiguration>(config.GetSection("Folders"));
 
-
+serviceCollection.AddTransient<ExclusionRules>();
 serviceCollection.AddTransient<IFolderSelector, CSharpBuildFolderSelector>();
 serviceCollection.AddTransient<FolderSizeCalculator>();
 serviceCollection.AddTransient<RecursiveFolderLocator>();
