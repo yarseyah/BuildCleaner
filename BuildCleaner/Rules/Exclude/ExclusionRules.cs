@@ -28,12 +28,6 @@ public class ExclusionRules
             Logger.LogTrace("Adding dot folder exclusion rule");
             Rules.Add(new ExcludeDotFoldersRule());
         }
-
-        foreach (var subtree in settings.ExcludeSubtrees)
-        {
-            Logger.LogTrace("Adding subtree exclusion rule: {Name}", subtree);
-            Rules.Add(new ExcludeSubtreeRule(subtree));
-        }
     }
 
     private ILogger<ExclusionRules> Logger { get; }

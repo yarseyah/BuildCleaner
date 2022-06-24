@@ -1,30 +1,37 @@
 ﻿namespace BuildCleaner.Rules.Selectors;
 
+using DotNet.Globbing;
+
 public class CSharpBuildFolderSelector : IFolderSelector
 {
-    public CSharpBuildFolderSelector(ILogger<CSharpBuildFolderSelector> logger)
+    public CSharpBuildFolderSelector(
+        ILogger<CSharpBuildFolderSelector> logger,
+        IOptions<FolderRulesConfiguration> folderRulesOptions)
     {
         Logger = logger;
+
+        var settings = folderRulesOptions.Value;
+        IncludePatterns = settings.Include.Select(Glob.Parse).ToArray();
+        ExcludePatterns = settings.Exclude.Select(Glob.Parse).ToArray();
     }
 
+    private Glob[] IncludePatterns { get; }
+    
+    private Glob[] ExcludePatterns { get; }
+
     private ILogger<CSharpBuildFolderSelector> Logger { get; }
-
-    private IReadOnlyCollection<string> TargetFolders { get; } =
-        new HashSet<string>(StringComparer.CurrentCultureIgnoreCase)
-        {
-            "bin",
-            "obj",
-            "testresults",
-        };
-
+    
     public Task<bool> SelectFolderAsync(string fullFolderPath)
     {
-        // Get the last part of the path (GetFileName will do this) and
-        // see if it is in the list of folders to delete
-        var folderName = Path.GetFileName(fullFolderPath);
-
+        var exclude = ExcludePatterns.Any(g => g.IsMatch(fullFolderPath));
+        if (exclude)
+        {
+            return Task.FromResult(false);
+        }
+        
         // Is the folder a special name matching the likely folders to delete?
-        if (TargetFolders.Contains(folderName))
+        var include = IncludePatterns.Any(g => g.IsMatch(fullFolderPath));
+        if (include)
         {
             // Folder is a candidate for being a CSharp build folder, to be sure get the parent
             // folder of the folder we are looking at (if null, then it can't be a CSharp build folder)

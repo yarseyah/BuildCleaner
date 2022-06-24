@@ -22,6 +22,9 @@ serviceCollection.AddLogging(logging =>
 serviceCollection.Configure<ExclusionsConfiguration>(config.GetSection("ExclusionRules"));
 serviceCollection.AddTransient<ExclusionRules>();
 
+serviceCollection.Configure<FolderRulesConfiguration>(config.GetSection("Folders"));
+
+
 serviceCollection.AddTransient<IFolderSelector, CSharpBuildFolderSelector>();
 serviceCollection.AddTransient<FolderSizeCalculator>();
 serviceCollection.AddTransient<RecursiveFolderLocator>();

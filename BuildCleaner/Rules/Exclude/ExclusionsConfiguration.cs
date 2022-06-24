@@ -7,6 +7,4 @@ public class ExclusionsConfiguration
     public bool ExcludeSymbolicLinks { get; set; }
     
     public bool ExcludeDotFolders { get; set; }
-    
-    public string[] ExcludeSubtrees { get; set; } = Array.Empty<string>();
 }
