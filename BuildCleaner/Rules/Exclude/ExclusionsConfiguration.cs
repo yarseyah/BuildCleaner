@@ -5,4 +5,6 @@ public class ExclusionsConfiguration
     public bool AncestorPath { get; set; }
 
     public bool SymbolicLinks { get; set; }
+    
+    public bool HiddenFolders { get; set; }
 }

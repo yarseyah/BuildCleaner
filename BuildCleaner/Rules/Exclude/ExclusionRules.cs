@@ -26,6 +26,12 @@ public class ExclusionRules
             Rules.Add(new ExcludeSymbolicLinksRule());
         }
 
+        if (settings.HiddenFolders)
+        {
+            Logger.LogTrace("Adding hidden folder exclusion rule");
+            Rules.Add(new ExcludeHiddenFoldersRule());
+        }
+
         foreach (var patternToExclude in folderRulesConfiguration.Value.Exclude)
         {
             Rules.Add(new ExcludeFoldersRule(patternToExclude));
