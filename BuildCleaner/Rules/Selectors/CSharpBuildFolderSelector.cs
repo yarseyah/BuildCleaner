@@ -23,12 +23,6 @@ public class CSharpBuildFolderSelector : IFolderSelector
     
     public Task<bool> SelectFolderAsync(string fullFolderPath)
     {
-        var exclude = ExcludePatterns.Any(g => g.IsMatch(fullFolderPath));
-        if (exclude)
-        {
-            return Task.FromResult(false);
-        }
-        
         // Is the folder a special name matching the likely folders to delete?
         var include = IncludePatterns.Any(g => g.IsMatch(fullFolderPath));
         if (include)

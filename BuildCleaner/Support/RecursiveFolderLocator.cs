@@ -69,21 +69,16 @@ public class RecursiveFolderLocator
         int depth = 0)
     {
         var subFolders = GetFolders(root);
-        var count = subFolders.Length;
-        var countdown = subFolders.Length;
-        var position = 0;
-     
+
         foreach (var folder in subFolders)
         {
             Logger.LogTrace(
-                "[{Pos}/{Total}] Processing folder '{Folder}' (Depth = {Depth}) ",
-                position,
-                count,
-                folder, 
+                "Processing folder '{Folder}' (Depth = {Depth}) ",
+                folder,
                 depth);
 
             Exclusion excluded;
-            
+
             try
             {
                 excluded = ExclusionRules.Enforce(folder);
@@ -91,18 +86,13 @@ public class RecursiveFolderLocator
             catch (Exception e)
             {
                 AccessErrors.Add((e, folder));
-                countdown--;
-                position++;
                 continue;
             }
-            
+
             var excludeSelf = (excluded & Exclusion.ExcludeSelf) == Exclusion.ExcludeSelf;
             var excludeChildren = (excluded & Exclusion.ExcludeChildren) == Exclusion.ExcludeChildren;
 
-            // Use the delegate to determine if we should visit this folder
-            var isBuildFolder = await selectorFunc(folder);
-            
-            if (isBuildFolder && !excludeSelf)
+            if (!excludeSelf && await selectorFunc(folder))
             {
                 Logger.LogTrace("Visiting folder {Folder} [{Depth}]", folder, depth);
                 yield return folder;
@@ -110,23 +100,11 @@ public class RecursiveFolderLocator
             else if (!excludeChildren)
             {
                 Logger.LogTrace("Calling children of folder {Folder} [{Depth}]", folder, depth);
-                await foreach (var child in GetFoldersRecursively(folder, selectorFunc, depth+1))
+                await foreach (var child in GetFoldersRecursively(folder, selectorFunc, depth + 1))
                 {
                     yield return child;
                 }
             }
-            else
-            {
-                Logger.LogTrace("Folder {Name} is assumed to be excluded [{Depth}]", folder, depth);
-            }
-
-            countdown--;
-            position++;
-        }
-
-        if (countdown > 0)
-        {
-            Logger.LogWarning("{FolderCount} folders remain to be visited", countdown);
         }
     }
 

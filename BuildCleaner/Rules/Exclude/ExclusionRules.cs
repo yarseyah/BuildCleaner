@@ -6,6 +6,7 @@ public class ExclusionRules
 
     public ExclusionRules(
         IOptions<ExclusionsConfiguration> configuration,
+        IOptions<FolderRulesConfiguration> folderRulesConfiguration,
         ILogger<ExclusionRules> logger)
     {
         Logger = logger;
@@ -23,10 +24,9 @@ public class ExclusionRules
             Rules.Add(new ExcludeSymbolicLinksRule());
         }
 
-        if (settings.ExcludeDotFolders)
+        foreach (var patternToExclude in folderRulesConfiguration.Value.Exclude)
         {
-            Logger.LogTrace("Adding dot folder exclusion rule");
-            Rules.Add(new ExcludeDotFoldersRule());
+            Rules.Add(new ExcludeFoldersRule(patternToExclude));
         }
     }
 
