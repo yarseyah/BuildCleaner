@@ -4,7 +4,7 @@
     "ReSharper",
     "ClassNeverInstantiated.Global",
     Justification = "Invoked by Spectre.Console for 'WhatIf' command options")]
-public class WhatIfCommand : AsyncCommand<Settings>
+public class WhatIfCommand : AsyncCommand<WhatIfCommandSettings>
 {
     private bool showSizes;
 
@@ -30,7 +30,7 @@ public class WhatIfCommand : AsyncCommand<Settings>
 
     private IFolderSelector FolderSelector { get; }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, WhatIfCommandSettings whatIfCommandSettings)
     {
         Logger.LogTrace("Invoked {Command}", nameof(WhatIfCommand));
 
@@ -39,18 +39,18 @@ public class WhatIfCommand : AsyncCommand<Settings>
 
         var options = new RecursiveFolderLocator.Options
         {
-            DisplayAccessErrors = settings.DisplayAccessErrors,
-            DisplayBaseFolder = settings.DisplayBaseFolder
+            DisplayAccessErrors = whatIfCommandSettings.DisplayAccessErrors,
+            DisplayBaseFolder = whatIfCommandSettings.DisplayBaseFolder
         };
 
-        showSizes = settings.ShowSizes;
+        showSizes = whatIfCommandSettings.ShowSizes;
         var deleteAll = false;
 
         // Configure the 'activity' response from users, if non-interactive, default to 'Delete'
-        Func<string, Activity> activity = settings.Interactive ? Prompt : _ => Activity.Delete;
+        Func<string, Activity> activity = whatIfCommandSettings.Interactive ? Prompt : _ => Activity.Delete;
 
         await RecursiveFolderLocator.VisitAsync(
-            settings.RootLocation,
+            whatIfCommandSettings.RootLocation,
             async (folder) =>
             {
                 Logger.LogTrace("Visiting {Folder}", folder);
