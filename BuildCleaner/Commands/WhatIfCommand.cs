@@ -37,9 +37,11 @@ public class WhatIfCommand : AsyncCommand<Settings>
         AnsiConsole.WriteLine("WhatIf shows the folders the would be deleted when using the 'delete' command");
         AnsiConsole.WriteLine();
 
-        var options = RecursiveFolderLocator.DefaultOptions;
-        options.DisplayAccessErrors = settings.DisplayAccessErrors;
-        options.DisplayBaseFolder = settings.DisplayBaseFolder;
+        var options = new RecursiveFolderLocator.Options
+        {
+            DisplayAccessErrors = settings.DisplayAccessErrors,
+            DisplayBaseFolder = settings.DisplayBaseFolder
+        };
 
         showSizes = settings.ShowSizes;
         var deleteAll = false;
@@ -52,22 +54,19 @@ public class WhatIfCommand : AsyncCommand<Settings>
             async (folder) =>
             {
                 Logger.LogTrace("Visiting {Folder}", folder);
-                
+
                 // Get the desired activity for this folder, if 'all' has previously been selected,
                 // short-circuit the prompt and return 'Delete'
                 var action = deleteAll ? Activity.Delete : activity(folder);
+                deleteAll |= (action == Activity.DeleteAll);
 
-                switch (action)
+                if (action is Activity.Delete or Activity.DeleteAll)
                 {
-                    case Activity.Delete:
-                        await WhatIfDeleteFolder(folder);
-                        break;
-                    case Activity.DeleteAll:
-                        await WhatIfDeleteFolder(folder);
-                        deleteAll = true;
-                        break;
-                    case Activity.DeleteNothing:
-                        return false;
+                    await WhatIfDeleteFolder(folder);
+                }
+                else if (action == Activity.DeleteNothing)
+                {
+                    return false;
                 }
 
                 return true;

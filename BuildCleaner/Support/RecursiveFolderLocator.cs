@@ -16,16 +16,15 @@ public class RecursiveFolderLocator
 
     private List<(Exception Exception, string Folder)> AccessErrors { get; } = new();
 
-    public Options DefaultOptions => new Options();
-
     public async Task VisitAsync(
         string rootLocation, 
         Func<string, Task<bool>> visitorFunc,
         Func<string, Task<bool>> selectorFunc,
-        Options? options = null)
+        Options? options = null,
+        CancellationToken cancellationToken = default)
     {
         var root = EnsureAbsolutePath(rootLocation);
-        options ??= DefaultOptions;
+        options ??= new();
 
         if (options.DisplayBaseFolder)
         {
@@ -33,10 +32,10 @@ public class RecursiveFolderLocator
             AnsiConsole.WriteLine();
         }
 
-        await foreach (var folder in GetFoldersRecursively(root, selectorFunc))
+        await foreach (var folder in GetFoldersRecursively(root, selectorFunc, cancellationToken))
         {
-            var @continue = await visitorFunc(folder);
-            if (!@continue)
+            // Visitor function will return false if it wants to stop the iteration.
+            if (!await visitorFunc(folder))
             {
                 break;
             }
@@ -66,12 +65,19 @@ public class RecursiveFolderLocator
     private async IAsyncEnumerable<string> GetFoldersRecursively(
         string root, 
         Func<string, Task<bool>> selectorFunc,
+        [EnumeratorCancellation]
+        CancellationToken cancellationToken,
         int depth = 0)
     {
         var subFolders = GetFolders(root);
 
         foreach (var folder in subFolders)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+            
             Logger.LogTrace(
                 "Processing folder '{Folder}' (Depth = {Depth}) ",
                 folder,
@@ -100,7 +106,7 @@ public class RecursiveFolderLocator
             else if (!excludeChildren)
             {
                 Logger.LogTrace("Calling children of folder {Folder} [{Depth}]", folder, depth);
-                await foreach (var child in GetFoldersRecursively(folder, selectorFunc, depth + 1))
+                await foreach (var child in GetFoldersRecursively(folder, selectorFunc, cancellationToken, depth + 1))
                 {
                     yield return child;
                 }
