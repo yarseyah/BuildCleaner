@@ -118,12 +118,16 @@ public class RecursiveFolderLocator
     {
         try
         {
-            var dirs = Directory.GetDirectories(parent);
+            var dirs = Directory
+                .GetDirectories(parent)
+                .OrderBy(d => d, StringComparer.CurrentCultureIgnoreCase)
+                .ToArray();
             Logger.LogDebug(
                 "From {Parent} found {Count} folders: {Dir}\n",
                 parent,
                 dirs.Length,
                 string.Join(Environment.NewLine, dirs.Select((d,i) => $"{i} - {d}")));
+            
             return dirs;
         }
         catch (Exception e)
