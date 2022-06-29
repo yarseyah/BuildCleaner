@@ -18,6 +18,15 @@ public static class ConsoleCommandLineExtensions
                         "whatif",
                         "."
                     });
+                configurator.AddCommand<DeleteCommand>("delete")
+                    .WithAlias("del")
+                    .WithAlias("rd")
+                    .WithDescription("Delete the builder folders")
+                    .WithExample(new[]
+                    {
+                        "delete",
+                        "."
+                    });
                 configurator.SetExceptionHandler(exception => AnsiConsole.WriteException(exception));
             });
         return commandApp;
