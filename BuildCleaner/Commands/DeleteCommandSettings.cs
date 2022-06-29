@@ -1,6 +1,6 @@
 ﻿namespace BuildCleaner.Commands;
 
-public class WhatIfCommandSettings : CommandSettings
+public class DeleteCommandSettings : CommandSettings
 {
     [CommandArgument(0, "[path]")]
     [Description("Starting path perform operation against")]
