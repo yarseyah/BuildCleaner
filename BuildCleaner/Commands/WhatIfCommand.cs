@@ -4,7 +4,7 @@
     "ReSharper",
     "ClassNeverInstantiated.Global",
     Justification = "Invoked by Spectre.Console for 'WhatIf' command options")]
-public class WhatIfCommand : AbstractDeleteCommand
+public class WhatIfCommand : DeleteCommand
 {
     public WhatIfCommand(
         ILogger<WhatIfCommand> logger,
@@ -23,7 +23,7 @@ public class WhatIfCommand : AbstractDeleteCommand
         AnsiConsole.WriteLine();
     }
 
-    protected override Task PerformCommand(string folder)
+    protected override Task DeleteFolder(string folder)
     {
         // Non operation in WhatIf command
         return Task.CompletedTask;
