@@ -29,36 +29,23 @@ public class DeleteCommandSettings : CommandSettings
 
     public override ValidationResult Validate()
     {
-        var entryAssembly = Assembly.GetEntryAssembly();
-        return (root: RootLocation, entryAssembly) switch
-        {
-            { root: ".", entryAssembly: not null } => ValidateEntryPath(entryAssembly),
-            { root.Length: > 0 } => EnsurePathExists(),
-            _ => ValidationResult.Error("Unspecified issue with root folder supplied"),
-        };
+        return RootLocation is { Length: > 0 }
+            ? EnsurePathExists()
+            : ValidationResult.Error("Unspecified issue with root folder supplied");
     }
 
     private ValidationResult EnsurePathExists()
     {
         var root = RootLocation.StartsWith('~')
             ? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + RootLocation[1..]
-            : RootLocation;
+            : RootLocation == "."
+                ? Directory.GetCurrentDirectory()
+                : RootLocation;
 
         RootLocation = Path.GetFullPath(root);
 
         return Directory.Exists(RootLocation)
             ? ValidationResult.Success()
             : ValidationResult.Error($"Unable to find directory '{RootLocation}'");
-    }
-
-    private ValidationResult ValidateEntryPath(Assembly entryAssembly)
-    {
-        if (!string.IsNullOrWhiteSpace(entryAssembly.Location))
-        {
-            RootLocation = Path.GetDirectoryName(entryAssembly.Location) ?? RootLocation;
-            return ValidationResult.Success();
-        }
-
-        return ValidationResult.Error("Seem to be missing entry assembly");
     }
 }

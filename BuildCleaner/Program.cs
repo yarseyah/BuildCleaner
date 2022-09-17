@@ -1,11 +1,14 @@
-﻿// Set up configuration with support for Json configuration and environment variables which
+﻿using BuildCleaner.Setup;
+
+// Set the current directory to the directory of the executable
+var executingLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+                        ?? Environment.CurrentDirectory;
+
+// Set up configuration with support for Json configuration and environment variables which
 // need to be prefixed with "BUILDCLEANER_"
-
-using BuildCleaner.Setup;
-
 var configurationBuilder = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json")
+    .AddJsonFile(Path.Combine(executingLocation, "appsettings.json"))
     .AddEnvironmentVariables("BUILDCLEANER_");
 
 var config = configurationBuilder.Build();
