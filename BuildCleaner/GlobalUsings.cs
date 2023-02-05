@@ -21,6 +21,5 @@ global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
-global using Spectre.Console.Cli.Extensions.DependencyInjection;
 global using Spectre.Console;
 global using Spectre.Console.Cli;

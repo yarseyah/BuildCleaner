@@ -1,5 +1,7 @@
 ﻿namespace BuildCleaner.Setup;
 
+using Spectre.Console.Cli.Extensions.DependencyInjection;
+
 public static class ConsoleCommandLineExtensions
 {
     public static CommandApp UseSpectreCommandLine(this ServiceCollection serviceCollection)
