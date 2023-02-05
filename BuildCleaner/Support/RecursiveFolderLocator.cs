@@ -54,11 +54,6 @@ public class RecursiveFolderLocator
                 AccessErrors.ForEach(ae => table.AddRow(ae.Exception.GetType().Name, ae.Folder));
                 AnsiConsole.Write(table);
             }
-            else
-            {
-                AnsiConsole.MarkupLine(
-                    "[aqua]No folders reported an access problem, however on deletion subfolders may[/]");
-            }
         }
     }
 
