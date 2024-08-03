@@ -4,17 +4,13 @@
     "ReSharper",
     "ClassNeverInstantiated.Global",
     Justification = "Invoked by Spectre.Console for 'WhatIf' command options")]
-public class WhatIfCommand : DeleteCommand
+public class WhatIfCommand(
+    ILogger<WhatIfCommand> logger,
+    RecursiveFolderLocator recursiveFolderLocator,
+    IFolderSelector folderSelector,
+    FolderSizeCalculator folderSizeCalculator)
+    : DeleteCommand(logger, recursiveFolderLocator, folderSelector, folderSizeCalculator)
 {
-    public WhatIfCommand(
-        ILogger<WhatIfCommand> logger,
-        RecursiveFolderLocator recursiveFolderLocator,
-        IFolderSelector folderSelector,
-        FolderSizeCalculator folderSizeCalculator)
-        : base(logger, recursiveFolderLocator, folderSelector, folderSizeCalculator)
-    {
-    }
-
     protected override string CommandName => "WhatIf";
 
     protected override void ExplainCommand()

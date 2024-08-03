@@ -29,7 +29,7 @@ public static class ConsoleCommandLineExtensions
                         "delete",
                         "."
                     });
-                configurator.SetExceptionHandler(exception => AnsiConsole.WriteException(exception));
+                configurator.SetExceptionHandler((exception, _) => AnsiConsole.WriteException(exception));
             });
         return commandApp;
     }

@@ -1,34 +1,19 @@
 namespace BuildCleaner.Commands;
 
-public class DeleteCommand : AsyncCommand<DeleteCommandSettings>
+public class DeleteCommand(
+    ILogger<DeleteCommand> logger,
+    RecursiveFolderLocator recursiveFolderLocator,
+    IFolderSelector folderSelector,
+    FolderSizeCalculator folderSizeCalculator)
+    : AsyncCommand<DeleteCommandSettings>
 {
-    public DeleteCommand(
-        ILogger<DeleteCommand> logger,
-        RecursiveFolderLocator recursiveFolderLocator,
-        IFolderSelector folderSelector,
-        FolderSizeCalculator folderSizeCalculator)
-    {
-        Logger = logger;
-        RecursiveFolderLocator = recursiveFolderLocator;
-        FolderSelector = folderSelector;
-        FolderSizeCalculator = folderSizeCalculator;
-    }
+    private bool ShowSizes { get; set; }
 
-    private ILogger Logger { get; }
-    
-    private RecursiveFolderLocator RecursiveFolderLocator { get; }
-
-    private IFolderSelector FolderSelector { get; }
-    
-    private FolderSizeCalculator FolderSizeCalculator { get; }
-
-    protected bool ShowSizes { get; private set; }
-    
-    protected long TotalSize { get; private set; }
+    private long TotalSize { get; set; }
     
     public override async Task<int> ExecuteAsync(CommandContext context, DeleteCommandSettings settings)
     {
-        Logger.LogTrace("Invoked {Command}", CommandName);
+        logger.LogTrace("Invoked {Command}", CommandName);
         ExplainCommand();
         
         var options = new RecursiveFolderLocator.Options
@@ -43,11 +28,11 @@ public class DeleteCommand : AsyncCommand<DeleteCommandSettings>
         // Configure the 'activity' response from users, if non-interactive, default to 'Delete'
         Func<string, Activity> activity = settings.Interactive ? Prompt : _ => Activity.Delete;
 
-        await RecursiveFolderLocator.VisitAsync(
+        await recursiveFolderLocator.VisitAsync(
             settings.RootLocation,
             async (folder) =>
             {
-                Logger.LogTrace("Visiting {Folder}", folder);
+                logger.LogTrace("Visiting {Folder}", folder);
 
                 // Get the desired activity for this folder, if 'all' has previously been selected,
                 // short-circuit the prompt and return 'Delete'
@@ -63,7 +48,7 @@ public class DeleteCommand : AsyncCommand<DeleteCommandSettings>
                             .StartAsync("Calculating folder size...", async _ =>
                             {
                                 // TODO: we could easily use a callback to get the latest size
-                                size = await FolderSizeCalculator.GetFolderSizeAsync(folder);
+                                size = await folderSizeCalculator.GetFolderSizeAsync(folder);
                                 TotalSize += size;
                             });
 
@@ -81,7 +66,7 @@ public class DeleteCommand : AsyncCommand<DeleteCommandSettings>
                     }
                     catch (Exception)
                     {
-                        Logger.LogError("Unable to process folder {Folder}", folder);
+                        logger.LogError("Unable to process folder {Folder}", folder);
                     }
                 }
                 else if (action == Activity.DeleteNothing)
@@ -91,7 +76,7 @@ public class DeleteCommand : AsyncCommand<DeleteCommandSettings>
 
                 return true;
             },
-            async folder => await FolderSelector.SelectFolderAsync(folder),
+            async folder => await folderSelector.SelectFolderAsync(folder),
             options);
 
         if (ShowSizes)
