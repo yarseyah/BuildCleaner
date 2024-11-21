@@ -1,9 +1,9 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildCleaner", "BuildCleaner\BuildCleaner.csproj", "{27DCC303-1350-4127-8FBC-27FAB42CCA7B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildCleaner", "BuildCleaner\BuildCleaner.csproj", "{27DCC303-1350-4127-8FBC-27FAB42CCA7B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
