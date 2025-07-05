@@ -5,8 +5,9 @@ public class WhatIfCommand(
     ILogger<WhatIfCommand> logger,
     RecursiveFolderLocator recursiveFolderLocator,
     IFolderSelector folderSelector,
-    FolderSizeCalculator folderSizeCalculator)
-    : DeleteCommandBase(logger, recursiveFolderLocator, folderSelector, folderSizeCalculator)
+    FolderSizeCalculator folderSizeCalculator,
+    IList<IAccessIssue> accessIssues)
+    : DeleteCommandBase(logger, recursiveFolderLocator, folderSelector, folderSizeCalculator, accessIssues)
 {
     protected override string CommandName => "WhatIf";
 

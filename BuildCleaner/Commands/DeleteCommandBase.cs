@@ -4,10 +4,12 @@ public abstract class DeleteCommandBase(
     ILogger logger,
     RecursiveFolderLocator recursiveFolderLocator,
     IFolderSelector folderSelector,
-    FolderSizeCalculator folderSizeCalculator)
+    FolderSizeCalculator folderSizeCalculator,
+    IList<IAccessIssue> accessIssues)
     : AsyncCommand<DeleteCommandSettings>
 {
     protected readonly ILogger Logger = logger;
+    protected readonly IList<IAccessIssue> AccessIssues = accessIssues;
     private bool ShowSizes { get; set; }
     private long TotalSize { get; set; }
     private RecursiveFolderLocator RecursiveFolderLocator { get; } = recursiveFolderLocator;
@@ -60,9 +62,10 @@ public abstract class DeleteCommandBase(
                     {
                         await DeleteFolder(settings, folder);
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
-                        Logger.LogError("Unable to process folder {Folder}", folder);
+                        Logger.LogError(ex, "Unable to process folder {Folder}", folder);
+                        AccessIssues.Add(new ExceptionAccessIssue(ex, folder));
                     }
                 }
                 else if (action == Activity.DeleteNothing)
@@ -128,4 +131,3 @@ public abstract class DeleteCommandBase(
         return fullPath.StartsWith(allowedRoot, StringComparison.OrdinalIgnoreCase);
     }
 }
-

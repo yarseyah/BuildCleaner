@@ -1,13 +1,13 @@
 ﻿namespace BuildCleaner.Support;
 
-public class RecursiveFolderLocator(ILogger<RecursiveFolderLocator> logger,
-    ExclusionRules exclusionRules)
+public class RecursiveFolderLocator(
+    ILogger<RecursiveFolderLocator> logger,
+    ExclusionRules exclusionRules,
+    IList<IAccessIssue> accessIssues)
 {
     private ILogger<RecursiveFolderLocator> Logger { get; } = logger;
-
     private ExclusionRules ExclusionRules { get; } = exclusionRules;
-
-    private List<(Exception Exception, string Folder)> AccessErrors { get; } = [];
+    private IList<IAccessIssue> AccessIssues { get; } = accessIssues;
 
     public async Task VisitAsync(
         string rootLocation, 
@@ -37,16 +37,17 @@ public class RecursiveFolderLocator(ILogger<RecursiveFolderLocator> logger,
         if (options.DisplayAccessErrors)
         {
             AnsiConsole.WriteLine();
-
-            if (AccessErrors.Count != 0)
+            if (AccessIssues.Count != 0)
             {
                 AnsiConsole.MarkupLine("[aqua]The following locations reported an access problem[/]");
                 AnsiConsole.WriteLine();
-                
                 var table = new Table();
-                table.AddColumns("Error", "Location");
-                
-                AccessErrors.ForEach(ae => table.AddRow(ae.Exception.GetType().Name, ae.Folder));
+                table.AddColumns("Type", "Message", "Location");
+                foreach (var issue in AccessIssues)
+                {
+                    var type = issue is ExceptionAccessIssue ex ? ex.Exception.GetType().Name : "General";
+                    table.AddRow(type, issue.Message, issue.Folder);
+                }
                 AnsiConsole.Write(table);
             }
         }
@@ -81,7 +82,7 @@ public class RecursiveFolderLocator(ILogger<RecursiveFolderLocator> logger,
             }
             catch (Exception e)
             {
-                AccessErrors.Add((e, folder));
+                AccessIssues.Add(new ExceptionAccessIssue(e, folder));
                 continue;
             }
 
@@ -124,7 +125,7 @@ public class RecursiveFolderLocator(ILogger<RecursiveFolderLocator> logger,
         {
             var logging = e is UnauthorizedAccessException ? LogLevel.Trace : LogLevel.Error;
             Logger.Log(logging, e, "Problem getting directories: {Root}", parent);
-            AccessErrors.Add((e, parent));
+            AccessIssues.Add(new ExceptionAccessIssue(e, parent));
             return [];
         }
     }

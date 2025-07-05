@@ -46,6 +46,7 @@ public static class ApplicationConfigurationExtensions
             serviceCollection.AddTransient<IFolderSelector, CSharpBuildFolderSelector>();
             serviceCollection.AddTransient<FolderSizeCalculator>();
             serviceCollection.AddTransient<RecursiveFolderLocator>();
+            serviceCollection.AddTransient<IList<IAccessIssue>>(_ => new List<IAccessIssue>());
 
             return Results.Ok(serviceCollection);
         }

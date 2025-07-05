@@ -5,8 +5,9 @@ public class DeleteCommand(
     ILogger<DeleteCommand> logger,
     RecursiveFolderLocator recursiveFolderLocator,
     IFolderSelector folderSelector,
-    FolderSizeCalculator folderSizeCalculator)
-    : DeleteCommandBase(logger, recursiveFolderLocator, folderSelector, folderSizeCalculator)
+    FolderSizeCalculator folderSizeCalculator,
+    IList<IAccessIssue> accessIssues)
+    : DeleteCommandBase(logger, recursiveFolderLocator, folderSelector, folderSizeCalculator, accessIssues)
 {
 
     protected override string CommandName => "Delete";
@@ -26,6 +27,7 @@ public class DeleteCommand(
             if (IsSymlink(di))
             {
                 Logger.LogWarning("Skipping symbolic link: {Folder}", folder);
+                AccessIssues.Add(new GeneralAccessIssue("Skipped symbolic link", folder));
                 return Task.CompletedTask;
             }
 
@@ -33,6 +35,7 @@ public class DeleteCommand(
             if (!IsSafePath(folder, settings.RootLocation))
             {
                 Logger.LogWarning("Skipping unsafe folder: {Folder}", folder);
+                AccessIssues.Add(new GeneralAccessIssue("Skipped unsafe folder", folder));
                 return Task.CompletedTask;
             }
 
@@ -45,6 +48,7 @@ public class DeleteCommand(
         {
             Logger.LogError(e, "Unable to process folder {Folder}", folder);
             AnsiConsole.WriteException(e, ExceptionFormats.ShortenEverything | ExceptionFormats.ShowLinks);
+            AccessIssues.Add(new ExceptionAccessIssue(e, folder));
             throw;
         }
 
