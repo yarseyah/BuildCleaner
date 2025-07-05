@@ -1,20 +1,13 @@
 ﻿namespace BuildCleaner.Support;
 
-public class RecursiveFolderLocator
+public class RecursiveFolderLocator(ILogger<RecursiveFolderLocator> logger,
+    ExclusionRules exclusionRules)
 {
-    public RecursiveFolderLocator(
-        ILogger<RecursiveFolderLocator> logger,
-        ExclusionRules exclusionRules)
-    {
-        Logger = logger;
-        ExclusionRules = exclusionRules;
-    }
+    private ILogger<RecursiveFolderLocator> Logger { get; } = logger;
 
-    private ILogger<RecursiveFolderLocator> Logger { get; }
+    private ExclusionRules ExclusionRules { get; } = exclusionRules;
 
-    private ExclusionRules ExclusionRules { get; }
-
-    private List<(Exception Exception, string Folder)> AccessErrors { get; } = new();
+    private List<(Exception Exception, string Folder)> AccessErrors { get; } = [];
 
     public async Task VisitAsync(
         string rootLocation, 
@@ -45,12 +38,14 @@ public class RecursiveFolderLocator
         {
             AnsiConsole.WriteLine();
 
-            if (AccessErrors.Any())
+            if (AccessErrors.Count != 0)
             {
                 AnsiConsole.MarkupLine("[aqua]The following locations reported an access problem[/]");
                 AnsiConsole.WriteLine();
+                
                 var table = new Table();
                 table.AddColumns("Error", "Location");
+                
                 AccessErrors.ForEach(ae => table.AddRow(ae.Exception.GetType().Name, ae.Folder));
                 AnsiConsole.Write(table);
             }
@@ -130,12 +125,12 @@ public class RecursiveFolderLocator
             var logging = e is UnauthorizedAccessException ? LogLevel.Trace : LogLevel.Error;
             Logger.Log(logging, e, "Problem getting directories: {Root}", parent);
             AccessErrors.Add((e, parent));
-            return Array.Empty<string>();
+            return [];
         }
     }
 
     // TODO: this can be done in the validation of settings
-    private string EnsureAbsolutePath(string root)
+    private static string EnsureAbsolutePath(string root)
     {
         var entryAssembly = Assembly.GetEntryAssembly();
         return (root, entryAssembly) switch

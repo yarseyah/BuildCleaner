@@ -1,13 +1,8 @@
 ﻿namespace BuildCleaner.Support;
 
-public class FolderSizeCalculator
+public class FolderSizeCalculator(ILogger<FolderSizeCalculator> logger)
 {
-    public FolderSizeCalculator(ILogger<FolderSizeCalculator> logger)
-    {
-        Logger = logger;
-    }
-
-    private ILogger<FolderSizeCalculator> Logger { get; }
+    private ILogger<FolderSizeCalculator> Logger { get; } = logger;
 
     public async Task<long> GetFolderSizeAsync(string folderPath)
     {
@@ -26,7 +21,7 @@ public class FolderSizeCalculator
             }
         }
 
-        foreach (string subFolder in Directory.GetDirectories(folderPath))
+        foreach (var subFolder in Directory.GetDirectories(folderPath))
         {
             size += await GetFolderSizeAsync(subFolder);
         }

@@ -1,6 +1,4 @@
-﻿namespace BuildCleaner.Setup;
-
-using Spectre.Console.Cli.Extensions.DependencyInjection;
+﻿namespace BuildCleaner.Startup;
 
 public static class ConsoleCommandLineExtensions
 {

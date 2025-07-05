@@ -1,15 +1,8 @@
 namespace BuildCleaner.Rules.Exclude;
 
-using DotNet.Globbing;
-
-public class ExcludeFoldersRule : IExclusionRule
+public class ExcludeFoldersRule(string globPattern) : IExclusionRule
 {
-    public ExcludeFoldersRule(string globPattern)
-    {
-        Matcher = Glob.Parse(globPattern);
-    }
-
-    private Glob Matcher { get; }
+    private Glob Matcher { get; } = Glob.Parse(globPattern);
 
     public Exclusion ShouldExclude(string path)
     {

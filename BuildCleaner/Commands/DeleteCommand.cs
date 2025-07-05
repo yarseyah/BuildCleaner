@@ -52,8 +52,8 @@ public class DeleteCommand(
                                 TotalSize += size;
                             });
 
-                        var sizeOutput = size == 0 ? "empty" : size.Bytes().ToFullWords();
-                        AnsiConsole.MarkupLine($"{CommandName}: [red][[DELETE]][/] {folder} [yellow]{sizeOutput}[/]");
+                        var sizeOutput = size == 0 ? "-" : FormatMb(size);
+                        AnsiConsole.MarkupLine($"{CommandName}: [yellow]{sizeOutput,12}[/] : [red][[DELETE]][/] {folder}");
                     }
                     else
                     {
@@ -82,7 +82,7 @@ public class DeleteCommand(
         if (ShowSizes)
         {
             AnsiConsole.WriteLine();
-            AnsiConsole.MarkupLine($"Space recovered [yellow]{TotalSize.Bytes().ToFullWords()}[/].");
+            AnsiConsole.MarkupLine($"Space recovered [yellow]{FormatMb(TotalSize)}[/].");
         }
 
         return 0;
@@ -130,6 +130,8 @@ public class DeleteCommand(
                 "none" => Activity.DeleteNothing,
                 _ => Activity.Unknown,
             };
+
+    private static string FormatMb(long bytes) => $"{(bytes / 1024.0 / 1024.0):0.##}mb";
 
     protected enum Activity
     {
