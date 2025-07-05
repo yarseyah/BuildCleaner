@@ -19,7 +19,7 @@ public class WhatIfCommand(
         AnsiConsole.WriteLine();
     }
 
-    protected override Task DeleteFolder(string folder)
+    protected override Task DeleteFolder(DeleteCommandSettings settings, string folder)
     {
         // Non operation in WhatIf command
         return Task.CompletedTask;

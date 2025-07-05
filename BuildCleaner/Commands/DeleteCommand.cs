@@ -62,7 +62,7 @@ public class DeleteCommand(
 
                     try
                     {
-                        await DeleteFolder(folder);
+                        await DeleteFolder(settings, folder);
                     }
                     catch (Exception)
                     {
@@ -95,11 +95,26 @@ public class DeleteCommand(
 
     protected virtual string CommandName => "Delete";
 
-    protected virtual Task DeleteFolder(string folder)
+    protected virtual Task DeleteFolder(DeleteCommandSettings settings, string folder)
     {
         try
         {
             DirectoryInfo di = new(folder);
+
+            // Prevent deletion of symlinks
+            if (IsSymlink(di))
+            {
+                logger.LogWarning("Skipping symbolic link: {Folder}", folder);
+                return Task.CompletedTask;
+            }
+
+            // Prevent deletion outside allowed root
+            if (!IsSafePath(folder, settings.RootLocation))
+            {
+                logger.LogWarning("Skipping unsafe folder: {Folder}", folder);
+                return Task.CompletedTask;
+            }
+
             if (di.Exists)
             {
                 di.Delete(true);
@@ -107,11 +122,29 @@ public class DeleteCommand(
         }
         catch (Exception e)
         {
-            AnsiConsole.WriteException(e);
+            logger.LogError(e, "Unable to process folder {Folder}", folder);
+            AnsiConsole.WriteException(e, ExceptionFormats.ShortenEverything | ExceptionFormats.ShowLinks);
             throw;
         }
 
         return Task.CompletedTask;
+    }
+
+    // Checks if the directory is a symbolic link
+    private static bool IsSymlink(DirectoryInfo di)
+    {
+        return di.Attributes.HasFlag(FileAttributes.ReparsePoint);
+    }
+
+    // Checks if the folder is within the allowed root
+    private bool IsSafePath(string folder, string rootLocation)
+    {
+        // Only allow deletion within a specific root directory
+        // settings.RootLocation is available in ExecuteAsync scope, so pass it as a field if needed
+        // For now, assume CommandContext or settings.RootLocation is accessible
+        var allowedRoot = Path.GetFullPath(rootLocation);
+        var fullPath = Path.GetFullPath(folder);
+        return fullPath.StartsWith(allowedRoot, StringComparison.OrdinalIgnoreCase);
     }
 
     protected static Activity Prompt(string folder) =>
