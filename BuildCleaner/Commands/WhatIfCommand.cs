@@ -1,21 +1,18 @@
 ﻿namespace BuildCleaner.Commands;
 
-[SuppressMessage(
-    "ReSharper",
-    "ClassNeverInstantiated.Global",
-    Justification = "Invoked by Spectre.Console for 'WhatIf' command options")]
+[UsedImplicitly]
 public class WhatIfCommand(
     ILogger<WhatIfCommand> logger,
     RecursiveFolderLocator recursiveFolderLocator,
     IFolderSelector folderSelector,
     FolderSizeCalculator folderSizeCalculator)
-    : DeleteCommand(logger, recursiveFolderLocator, folderSelector, folderSizeCalculator)
+    : DeleteCommandBase(logger, recursiveFolderLocator, folderSelector, folderSizeCalculator)
 {
     protected override string CommandName => "WhatIf";
 
     protected override void ExplainCommand()
     {
-        AnsiConsole.WriteLine("WhatIf shows the folders the would be deleted when using the 'delete' command");
+        AnsiConsole.WriteLine("WhatIf shows the folders that would be deleted when using the 'delete' command");
         AnsiConsole.WriteLine();
     }
 
