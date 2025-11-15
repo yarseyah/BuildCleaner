@@ -16,7 +16,10 @@ public abstract class DeleteCommandBase(
     private IFolderSelector FolderSelector { get; } = folderSelector;
     private FolderSizeCalculator FolderSizeCalculator { get; } = folderSizeCalculator;
 
-    public override async Task<int> ExecuteAsync(CommandContext context, DeleteCommandSettings settings)
+    public override async Task<int> ExecuteAsync(
+        CommandContext context,
+        DeleteCommandSettings settings,
+        CancellationToken cancellationToken)
     {
         Logger.LogTrace("Invoked {Command}", CommandName);
         ExplainCommand();
